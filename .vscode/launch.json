@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - WordAnalyze",
+            "request": "launch",
+            "mainClass": "WordAnalyze",
+            "projectName": "CMM—Interpreter"
+        }
+    ]
+}
