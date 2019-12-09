@@ -3,10 +3,10 @@ import java.io.FileReader;
 import java.util.ArrayList;
 
 public class WordAnalyze {
-	// �洢�ʷ��������token
+	// 锟芥储锟绞凤拷锟斤拷锟斤拷锟斤拷锟絫oken
 	public ArrayList<Token> TokenList = new ArrayList<>();
 
-	// �жϵ�ǰ�ַ��Ƿ�����ĸ
+	// 锟叫断碉拷前锟街凤拷锟角凤拷锟斤拷锟斤拷母
 	private boolean isLetter(char curcharacter) {
 		if ((curcharacter >= 'a' && curcharacter <= 'z') || (curcharacter >= 'A' && curcharacter <= 'Z')) {
 			return true;
@@ -14,7 +14,7 @@ public class WordAnalyze {
 			return false;
 	}
 
-	// �жϵ�ǰ�ַ��Ƿ�������
+	// 锟叫断碉拷前锟街凤拷锟角凤拷锟斤拷锟斤拷锟斤拷
 	private boolean isDigit(char curcharacter) {
 		if (curcharacter >= '0' && curcharacter <= '9') {
 			return true;
@@ -22,7 +22,7 @@ public class WordAnalyze {
 			return false;
 	}
 
-	// �жϵ�ǰ�����Ƿ�Ϊ�ؼ��֣��������tokenlist
+	// 锟叫断碉拷前锟斤拷锟斤拷锟角凤拷为锟截硷拷锟街ｏ拷锟斤拷锟斤拷锟斤拷锟絫okenlist
 	private boolean isKeyword(String word, int line) {
 		switch (word) {
 		case "break":
@@ -52,15 +52,15 @@ public class WordAnalyze {
 		case "return":
 			TokenList.add(new Token(TokenType.RETURN, word, line));
 			return true;
-		case "main":
-			TokenList.add(new Token(TokenType.MAIN, word, line));
-			return true;
+		//case "main":
+		//	TokenList.add(new Token(TokenType.MAIN, word, line));
+		//	return true;
 		default:
 			return false;
 		}
 	}
 
-	private void wordAnalyze(char[] words) {
+	void wordAnalyze(char[] words) {
 		int line = 1;
 		for (int i = 0; i < words.length; i++) {
 			String word = "";
@@ -69,23 +69,23 @@ public class WordAnalyze {
 					word += words[i];
 					i++;
 					if (i >= words.length)
-						break; // �ж��Ƿ�����Խ��
+						break; // 锟叫讹拷锟角凤拷锟斤拷锟斤拷越锟斤拷
 				}
 				i--;
-				if (!isKeyword(word, line)) { // �ж��Ƿ�Ϊ�ؼ���
+				if (!isKeyword(word, line)) { // 锟叫讹拷锟角凤拷为锟截硷拷锟斤拷
 					TokenList.add(new Token(TokenType.IDENTIFIER, word, line));
 				}
-			} else if (isDigit(words[i])) { // ����
-				boolean point = false; // ��ǰ�ַ��Ƿ�ΪС����
-				int pointflag = 0; // С�������?
+			} else if (isDigit(words[i])) { // 锟斤拷锟斤拷
+				boolean point = false; // 锟斤拷前锟街凤拷锟角凤拷为小锟斤拷锟斤拷
+				int pointflag = 0; // 小锟斤拷锟斤拷锟斤拷锟?
 				while (isDigit(words[i]) || point) {
 					if (pointflag >= 2)
-						break; // ͨ���жϸ�token����С��������ж��Ƿ��?�Ϸ�С��
+						break; // 通锟斤拷锟叫断革拷token锟斤拷锟斤拷小锟斤拷锟斤拷锟斤拷锟斤拷卸锟斤拷欠锟轿?锟较凤拷小锟斤拷
 					word += words[i];
 					i++;
 					if (i >= words.length)
-						break; // �ж��Ƿ�����Խ��
-					if (words[i] == '.') // �����ж��Ƿ�ΪС��
+						break; // 锟叫讹拷锟角凤拷锟斤拷锟斤拷越锟斤拷
+					if (words[i] == '.') // 锟斤拷锟斤拷锟叫讹拷锟角凤拷为小锟斤拷
 					{
 						point = true;
 						pointflag++;
@@ -93,75 +93,113 @@ public class WordAnalyze {
 						point = false;
 					}
 				}
-				if (isLetter(words[i]) || point) { // �����ǰ�ַ�����ĸ��С����?,��ó������?Ϊ����
+				if (isLetter(words[i]) || point) { // 锟斤拷锟斤拷锟角帮拷址锟斤拷锟斤拷锟侥革拷锟叫★拷锟斤拷锟?,锟斤拷贸锟斤拷锟斤拷锟皆?为锟斤拷锟斤拷
 					word += words[i];
-					TokenList.add(new Token(TokenType.ERROR, word, line));
+					TokenList.add(new Token(TokenType.ERROR, word, line,"非法常数"));
 				} else {
 					i--;
 					TokenList.add(new Token(TokenType.CONSTANT, word, line));
 				}
 			} else {
 				switch (words[i]) {
-				// �����?
+				// 锟斤拷锟斤拷锟?
 				case '+':
 					word += words[i];
-					TokenList.add(new Token(TokenType.ADD, word, line));
+					if (i < words.length - 1) { 
+						i++;
+						if (words[i] == '=') { 
+							word += words[i];
+							TokenList.add(new Token(TokenType.ADD_EQUAL, word, line));
+						}else if (words[i] == '+') { 
+							word += words[i];
+							TokenList.add(new Token(TokenType.ADD_ADD, word, line));
+						} else { 
+							i--;
+							TokenList.add(new Token(TokenType.ADD, word, line));
+						}
+					} 
 					break;
 				case '-':
 					word += words[i];
-					TokenList.add(new Token(TokenType.SUBSTRACT, word, line));
+					if (i < words.length - 1) { 
+						i++;
+						if (words[i] == '=') { 
+							word += words[i];
+							TokenList.add(new Token(TokenType.SUBSTRACT_EQUAL, word, line));
+						} else if (words[i] == '-') { 
+							word += words[i];
+							TokenList.add(new Token(TokenType.SUBSTRACT_SUBSTRACT, word, line));
+						} else { 
+							i--;
+							TokenList.add(new Token(TokenType.SUBSTRACT, word, line));
+						}
+					} 
 					break;
 				case '*':
 					word += words[i];
-					TokenList.add(new Token(TokenType.MULTIPLY, word, line));
+					if (i < words.length - 1) { 
+						i++;
+						if (words[i] == '=') { 
+							word += words[i];
+							TokenList.add(new Token(TokenType.MULTIPLY_EQUAL, word, line));
+						} else { 
+							i--;
+							TokenList.add(new Token(TokenType.MULTIPLY, word, line));
+						}
+					} 
 					break;
 				case '/':
 					word += words[i];
-					if (i < words.length - 1) { // �жϵ�ǰ�ַ��Ƿ��Ѿ�λ������ĩβ
+					if (i < words.length - 1) { // 锟叫断碉拷前锟街凤拷锟角凤拷锟窖撅拷位锟斤拷锟斤拷锟斤拷末尾
 						i++;
-						if (words[i] == 10)
-							line++; // �ж��Ƿ���
-						if (words[i] == '=') { // ��������= ��ʶ��Ϊ<=
+						if (words[i] == '=') { // 锟斤拷锟斤拷锟斤拷锟斤拷= 锟斤拷识锟斤拷为<=
 							word += words[i];
-							TokenList.add(new Token(TokenType.MAEQ, word, line));
-						} else if (words[i] == '/') { // ��������/���򽫻��з�ǰ�������ַ�ʶ��Ϊע��,�޻��з���ע����������ַ�?
+							TokenList.add(new Token(TokenType.DIVIDE_EQUAL, word, line));
+						} else if ((words[i] == '/')) { // 锟斤拷锟斤拷锟斤拷锟斤拷/锟斤拷锟津将伙拷锟叫凤拷前锟斤拷锟斤拷锟斤拷锟街凤拷识锟斤拷为注锟斤拷,锟睫伙拷锟叫凤拷锟斤拷注锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷址锟?
 							while ((words[i] != 10) && (i != words.length - 1)) {
 								i++;
 								if (words[i] == 10)
-									line++; // �ж��Ƿ���
+									line++; // 锟叫讹拷锟角凤拷锟斤拷
 							}
-						} else { // �������ʶ���?/
+						}else if ((words[i] == '*')) { // 锟斤拷锟斤拷锟斤拷锟斤拷/锟斤拷锟津将伙拷锟叫凤拷前锟斤拷锟斤拷锟斤拷锟街凤拷识锟斤拷为注锟斤拷,锟睫伙拷锟叫凤拷锟斤拷注锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷址锟?
+								i++;
+							while ((i != words.length - 1)) {
+								i++;
+								if (words[i] == 10)
+									line++; 
+								if((words[i-1] == '*')&&(words[i]=='/'))
+								break;
+							}
+						} else { 
 							i--;
-							TokenList.add(new Token(TokenType.MAIOR, word, line));
+							TokenList.add(new Token(TokenType.DIVIDE, word, line));
 						}
-					} else
-						TokenList.add(new Token(TokenType.MAIOR, word, line));
+					} 
 					break;
 				case '>':
 					word += words[i];
-					if (i < words.length - 1) { // �жϵ�ǰ�ַ��Ƿ��Ѿ�λ������ĩβ
+					if (i < words.length - 1) { 
 						i++;
-						if (words[i] == '=') { // ��������= ��ʶ��Ϊ<=
+						if (words[i] == '=') { 
 							word += words[i];
 							TokenList.add(new Token(TokenType.MAEQ, word, line));
-						} else { // �������ʶ���?>
+						} else { 
 							i--;
 							TokenList.add(new Token(TokenType.MAIOR, word, line));
 						}
-					} else
-						TokenList.add(new Token(TokenType.MAIOR, word, line));
+					} 
 					break;
 				case '<':
 					word += words[i];
-					if (i < words.length - 1) { // �жϵ�ǰ�ַ��Ƿ��Ѿ�λ������ĩβ
+					if (i < words.length - 1) { // 锟叫断碉拷前锟街凤拷锟角凤拷锟窖撅拷位锟斤拷锟斤拷锟斤拷末尾
 						i++;
-						if (words[i] == '=') { // ��������= ��ʶ��Ϊ>=
+						if (words[i] == '=') { // 锟斤拷锟斤拷锟斤拷锟斤拷= 锟斤拷识锟斤拷为>=
 							word += words[i];
 							TokenList.add(new Token(TokenType.MEEQ, word, line));
-						} else if (words[i] == '>') { // ��������> ��ʶ��Ϊ<>
+						} else if (words[i] == '>') { // 锟斤拷锟斤拷锟斤拷锟斤拷> 锟斤拷识锟斤拷为<>
 							word += words[i];
 							TokenList.add(new Token(TokenType.UNEQ, word, line));
-						} else { // �������ʶ���?<
+						} else { // 锟斤拷锟斤拷锟斤拷锟绞讹拷锟轿?<
 							i--;
 							TokenList.add(new Token(TokenType.MAIOR, word, line));
 						}
@@ -170,12 +208,12 @@ public class WordAnalyze {
 					break;
 				case '=':
 					word += words[i];
-					if (i < words.length - 1) { // �жϵ�ǰ�ַ��Ƿ��Ѿ�λ������ĩβ
+					if (i < words.length - 1) { // 锟叫断碉拷前锟街凤拷锟角凤拷锟窖撅拷位锟斤拷锟斤拷锟斤拷末尾
 						i++;
-						if (words[i] == '=') { // ��������= ��ʶ��Ϊ==
+						if (words[i] == '=') { // 锟斤拷锟斤拷锟斤拷锟斤拷= 锟斤拷识锟斤拷为==
 							word += words[i];
 							TokenList.add(new Token(TokenType.EQEQ, word, line));
-						} else { // �������ʶ���?=
+						} else { // 锟斤拷锟斤拷锟斤拷锟绞讹拷锟轿?=
 							i--;
 							TokenList.add(new Token(TokenType.EQUAL, word, line));
 						}
@@ -188,12 +226,12 @@ public class WordAnalyze {
 					break;
 				case '&':
 					word += words[i];
-					if (i < words.length - 1) { // �жϵ�ǰ�ַ��Ƿ��Ѿ�λ������ĩβ
+					if (i < words.length - 1) { // 锟叫断碉拷前锟街凤拷锟角凤拷锟窖撅拷位锟斤拷锟斤拷锟斤拷末尾
 						i++;
-						if (words[i] == '&') { // ��������& ��ʶ��Ϊ&&
+						if (words[i] == '&') { // 锟斤拷锟斤拷锟斤拷锟斤拷& 锟斤拷识锟斤拷为&&
 							word += words[i];
 							TokenList.add(new Token(TokenType.AND, word, line));
-						} else { // �������ʶ���?&
+						} else { // 锟斤拷锟斤拷锟斤拷锟绞讹拷锟轿?&
 							i--;
 							TokenList.add(new Token(TokenType.L_AND, word, line));
 						}
@@ -202,19 +240,19 @@ public class WordAnalyze {
 					break;
 				case '|':
 					word += words[i];
-					if (i < words.length - 1) { // �жϵ�ǰ�ַ��Ƿ��Ѿ�λ������ĩβ
+					if (i < words.length - 1) { // 锟叫断碉拷前锟街凤拷锟角凤拷锟窖撅拷位锟斤拷锟斤拷锟斤拷末尾
 						i++;
-						if (words[i] == '|') { // ��������| ��ʶ��Ϊ||
+						if (words[i] == '|') { // 锟斤拷锟斤拷锟斤拷锟斤拷| 锟斤拷识锟斤拷为||
 							word += words[i];
 							TokenList.add(new Token(TokenType.AND, word, line));
-						} else { // �������ʶ��Ϊ|
+						} else { // 锟斤拷锟斤拷锟斤拷锟绞讹拷锟轿獆
 							i--;
 							TokenList.add(new Token(TokenType.L_AND, word, line));
 						}
 					} else
 						TokenList.add(new Token(TokenType.L_AND, word, line));
 					break;
-				// �ֽ��?
+				// 锟街斤拷锟?
 				case '(':
 					word += words[i];
 					TokenList.add(new Token(TokenType.LEFT_PARENTHESIS, word, line));
@@ -239,7 +277,7 @@ public class WordAnalyze {
 					word += words[i];
 					TokenList.add(new Token(TokenType.R_BRACKET, word, line));
 					break;
-				// ��������
+				// 锟斤拷锟斤拷锟斤拷锟斤拷
 				case ';':
 					word += words[i];
 					TokenList.add(new Token(TokenType.COLON, word, line));
@@ -251,43 +289,37 @@ public class WordAnalyze {
 				case '#':
 					word += words[i];
 					TokenList.add(new Token(TokenType.STOP_SIGN, word, line));
-					for (Token token : TokenList) { // ��ʶ����ֹ��ʱ���ʷ�������������ӡ�������Ľ��?
+					for (Token token : TokenList) { // 锟斤拷识锟斤拷锟斤拷止锟斤拷时锟斤拷锟绞凤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷印锟斤拷锟斤拷锟斤拷锟侥斤拷锟?
 						token.tostring();
 					}
 					return;
-				// �����ո��?
 				case 32:
 					break;
-				// �������з�
 				case 10:
 					line++;
 					break;
-				// �����س��з�
 				case 13:
 					break;
 				default:
-					System.out.println("����δ�������?" + words[i] + "    " + line);
+					System.out.println("未定义符号" + words[i] + "    " + line);
 					break;
 				}
 			}
 
 		}
-		for (Token token : TokenList) { // ������ɨ�����ʱ���ʷ�������������ӡ�������Ľ��
+		for (Token token : TokenList) { // 锟斤拷锟斤拷锟斤拷扫锟斤拷锟斤拷锟绞憋拷锟斤拷史锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟接★拷锟斤拷锟斤拷锟斤拷慕锟斤拷
 			token.tostring();
 		}
 		return;
 	}
 
 	public static void main(String args[]) throws Exception {
-		File file = new File("D:\\data.txt");// ����һ��file����������ʼ��FileReader
-		// File fileout = new
-		// File("D:\\dataout.txt");//����һ��fileout���������ض��������?
+		File file = new File("D:\\data.txt");
+		// File fileout = new File("D:\\dataout.txt");//锟斤拷锟斤拷一锟斤拷fileout锟斤拷锟斤拷锟斤拷锟斤拷锟截讹拷锟斤拷锟斤拷锟斤拷锟?
 		// PrintStream ps = new PrintStream(fileout);
 		// System.setOut(ps);
-		FileReader reader = new FileReader(file);// ����һ��fileReader����������ʼ��BufferedReader
+		FileReader reader = new FileReader(file);// 锟斤拷锟斤拷一锟斤拷fileReader锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷BufferedReader
 		int length = (int) file.length();
-		// ���ﶨ���ַ������ʱ�����?�ඨ��һ��,��Ϊ�ʷ���������������ǰ��ȡһ���ַ���ʱ����������һ��
-		// �ַ�����ȡ������ڶ�ȡ��һ���ַ��ͻ����Խ�����?
 		char buf[] = new char[length];
 		reader.read(buf);
 		reader.close();

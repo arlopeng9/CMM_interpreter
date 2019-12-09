@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - Interpreter",
+            "request": "launch",
+            "mainClass": "Interpreter",
+            "projectName": "CMM—Interpreter"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - WordAnalyze",
             "request": "launch",
             "mainClass": "WordAnalyze",

@@ -12,37 +12,37 @@ public final class TokenType {
 	public static final int MAIN = 9;
 	public static final int BREAK = 10;
 	public static final int RETURN = 11;
-	//+ÔËËã·û
+	//+è¿ç®—ç¬¦
 	public static final int ADD = 12;
-	//-ÔËËã·û
+	//-è¿ç®—ç¬¦
 	public static final int SUBSTRACT = 13;
-	//*ÔËËã·û
+	//*è¿ç®—ç¬¦
 	public static final int MULTIPLY = 14;
-	///ÔËËã·û
+	///è¿ç®—ç¬¦
 	public static final int DIVIDE = 15;
-	//>ÔËËã·û
+	//>è¿ç®—ç¬¦
 	public static final int MAIOR = 16;
-	//<ÔËËã·û
+	//<è¿ç®—ç¬¦
 	public static final int MENOR = 17;
-	//=ÔËËã·û
+	//=è¿ç®—ç¬¦
 	public static final int EQUAL = 18;
-	//>=ÔËËã·û
+	//>=è¿ç®—ç¬¦
 	public static final int MAEQ = 19;
-	//<=ÔËËã·û
+	//<=è¿ç®—ç¬¦
 	public static final int MEEQ = 20;
-	//<>ÔËËã·û
+	//<>è¿ç®—ç¬¦
 	public static final int UNEQ = 21;
-	//==ÔËËã·û
+	//==è¿ç®—ç¬¦
 	public static final int EQEQ = 22;
-	//||ÔËËã·û
+	//||è¿ç®—ç¬¦
 	public static final int OR = 23;
-	//&&ÔËËã·û
+	//&&è¿ç®—ç¬¦
 	public static final int AND = 24;
-	//|ÔËËã·û
+	//|è¿ç®—ç¬¦
 	public static final int L_OR = 25;
-	//&ÔËËã·û
+	//&è¿ç®—ç¬¦
 	public static final int L_AND = 26;
-	//!ÔËËã·û
+	//!è¿ç®—ç¬¦
 	public static final int NOT = 27;
 	
 	//(
@@ -57,16 +57,29 @@ public final class TokenType {
 	public static final int L_BRACKET = 32;
 	//}
 	public static final int R_BRACKET = 33;
-	//±êÊ¶·û
+	//æ ‡è¯†ç¬¦
 	public static final int IDENTIFIER = 34;
-	//ÖÕÖ¹·û
+	//ç»ˆæ­¢ç¬¦
 	public static final int STOP_SIGN = 35;
-	//³£Êý
+	//å¸¸æ•°
 	public static final int CONSTANT = 36;
-	//·ÖºÅ
+	//åˆ†å·
 	public static final int COLON = 37;
-	//¶ººÅ
+	//é€—å·
 	public static final int COMMA = 38;
 	//error
 	public static final int ERROR = 39;
+//å¢ž
+	//+=è¿ç®—ç¬¦
+	public static final int ADD_EQUAL = 40;
+	//-=è¿ç®—ç¬¦
+	public static final int SUBSTRACT_EQUAL = 41;
+	//*=è¿ç®—ç¬¦
+	public static final int MULTIPLY_EQUAL = 42;
+	///=è¿ç®—ç¬¦
+	public static final int DIVIDE_EQUAL = 43;
+	//++è¿ç®—ç¬¦
+	public static final int ADD_ADD = 42;
+	//--è¿ç®—ç¬¦
+	public static final int SUBSTRACT_SUBSTRACT = 45;
 }
