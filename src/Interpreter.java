@@ -3,7 +3,7 @@ import java.io.FileReader;
 
 public class Interpreter {
 public static void main(String args[]) throws Exception {
-		File file = new File("D:\\data.txt");
+		File file = new File("D:\\manacher.c");
 		// File fileout = new File("D:\\dataout.txt");
 		// PrintStream ps = new PrintStream(fileout);
 		// System.setOut(ps);
@@ -15,8 +15,12 @@ public static void main(String args[]) throws Exception {
 		WordAnalyze wordanalyze = new WordAnalyze();
         wordanalyze.wordAnalyze(buf);
         SyntaxAnalyze  syntax = new SyntaxAnalyze(wordanalyze.TokenList);
-        String m = syntax.parse();
-        System.out.print(m);
-        syntax.printTree(syntax.getHeadNode(),"");
+        String parseErrorInfo = syntax.parse();
+        System.out.print(parseErrorInfo);
+		syntax.printTree(syntax.getHeadNode(),"");
+		SemanticAnalyze semantic = new SemanticAnalyze(syntax.getHeadNode());
+		String semanticErrorInfo = semantic.semantic();
+		System.out.print(semanticErrorInfo);
+		semantic.printSymbalTable();
 }
 }

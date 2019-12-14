@@ -5,13 +5,13 @@ public class Record {
     private String name;
     private int type;//数据类型
     private int intVal;//int类型数据的值
-    private char charVal;//char类型数据的值
+    private boolean boolVal;//boolean类型数据的值
     private float floatVal;//float类型数据的值
 
     private int arrayNum;//数组类型数据的大小
-    private Integer arrayIndex;//数组下标,为赋值时为空
+    private Integer arrayIndex;//数组下标,未赋值时为空
     private int[] intArray;//int类型数组
-    private char[] charArray;//char类型数据的值
+    private boolean[] boolArray;//boolean类型数据的值
     private float[] floatArray;//float类型数组
 
     public Record(int level, Token token, int type, String name, int intVal){
@@ -22,12 +22,12 @@ public class Record {
         this.intVal = intVal;
     }
 
-    public Record(int level, Token token, int type, String name, char charVal){
+    public Record(int level, Token token, int type, String name, boolean boolVal){
         this.level = level;
         this.token = token;
         this.type = type;
         this.name = name;
-        this.charVal = charVal;
+        this.boolVal = boolVal;
     }
 
     public Record(int level, Token token, int type, String name, float realValue){
@@ -47,12 +47,12 @@ public class Record {
         this.arrayNum = intArray.length;
     }
 
-    public Record(int level, Token token, int type, String name, char[] charArray){
+    public Record(int level, Token token, int type, String name, boolean[] boolArray){
         this.level = level;
         this.token = token;
         this.type = type;
         this.name = name;
-        this.charArray = charArray;
+        this.boolArray = boolArray;
         this.arrayNum = intArray.length;
     }
 
@@ -69,17 +69,11 @@ public class Record {
         if(this.getType() == Record.tInt){
             return this.intVal;
         }
-        if(this.getType() == Record.tChar){
-            return this.charVal;
-        }
         if (this.getType() == Record.tFloat){
             return this.floatVal;
         }
         if (this.getType() == Record.tIntArray){
             return intArray[this.getArrayIndex()];
-        }
-        if (this.getType() == Record.tCharArray){
-            return charArray[this.getArrayIndex()];
         }
         if (this.getType() == Record.tFloatArray){
             return this.floatArray[this.arrayIndex];
@@ -87,12 +81,222 @@ public class Record {
         return 0;
     }
 
+    public boolean setValue(Record value){
+        if(value.getType() == this.getType())
+        {
+        if(this.getType() == Record.tInt){
+            this.setintVal(value.getintVal());
+        }
+        if(this.getType() == Record.tbool){
+            this.setboolVal(value.getboolVal());
+        }
+        if (this.getType() == Record.tFloat){
+             this.setfloatVal(value.getfloatVal());
+        }
+        if (this.getType() == Record.tIntArray){
+            this.getIntArray()[getArrayIndex()] = value.getIntArray()[value.getArrayIndex()];
+        }
+        if (this.getType() == Record.tboolArray){
+            this.getboolArray()[getArrayIndex()] = value.getboolArray()[value.getArrayIndex()];
+        }
+        if (this.getType() == Record.tFloatArray){
+             this.getfloatArray()[getArrayIndex()] = value.getfloatArray()[value.getArrayIndex()];
+        }
+        return true;
+    }
+    if( (value.getType() == Record.tInt && this.getType() == Record.tFloat)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)){
+        this.setfloatVal(value.getValue());
+        return true;
+    }
+    if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
+        this.setintVal(value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    if( value.getType() == Record.tboolArray && this.getType() == Record.tbool){
+        this.setboolVal(value.getboolArray()[value.getArrayIndex()]);
+        return true;
+    }
+    return false;
+    }
+
+    public boolean addValue(Record value){
+        if(value.getType() == this.getType())
+        {
+        if(this.getType() == Record.tInt){
+            this.setintVal(this.getintVal()+value.getintVal());
+        }
+        if (this.getType() == Record.tFloat){
+             this.setfloatVal(this.getfloatVal()+value.getfloatVal());
+        }
+        if (this.getType() == Record.tIntArray){
+            this.getIntArray()[getArrayIndex()] += value.getIntArray()[value.getArrayIndex()];
+        }
+        if (this.getType() == Record.tFloatArray){
+             this.getfloatArray()[getArrayIndex()] += value.getfloatArray()[value.getArrayIndex()];
+        }
+        return true;
+    }
+    if((value.getType() == Record.tInt && this.getType() == Record.tFloat) || ( value.getType() == Record.tFloat && this.getType() == Record.tInt)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloat && this.getType() == Record.tIntArray)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)){
+        this.setType(Record.tFloat);
+        this.setfloatVal(this.getValue() + value.getValue());
+        return true;
+    }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tInt){
+       
+    //     this.setfloatVal(this.getintVal() + value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tIntArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() + value.getIntArray()[value.getArrayIndex()]);
+    // }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tIntArray){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getIntArray()[this.getArrayIndex()] + value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() + value.getfloatArray()[value.getArrayIndex()]);
+    // }
+    if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
+        this.setintVal(this.getintVal() +value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    return false;
+    }
+
+    public boolean substractValue(Record value){
+        if(value.getType() == this.getType())
+        {
+        if(this.getType() == Record.tInt){
+            this.setintVal(this.getintVal()-value.getintVal());
+        }
+        if (this.getType() == Record.tFloat){
+             this.setfloatVal(this.getfloatVal()-value.getfloatVal());
+        }
+        if (this.getType() == Record.tIntArray){
+            this.getIntArray()[getArrayIndex()] -= value.getIntArray()[value.getArrayIndex()];
+        }
+        if (this.getType() == Record.tFloatArray){
+             this.getfloatArray()[getArrayIndex()] -= value.getfloatArray()[value.getArrayIndex()];
+        }
+        return true;
+    }
+    if((value.getType() == Record.tInt && this.getType() == Record.tFloat) || ( value.getType() == Record.tFloat && this.getType() == Record.tInt)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloat && this.getType() == Record.tIntArray)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)){
+        this.setType(Record.tFloat);
+        this.setfloatVal(this.getValue() - value.getValue());
+        return true;
+    }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tInt){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getintVal() - value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tIntArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() - value.getIntArray()[value.getArrayIndex()]);
+    // }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tIntArray){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getIntArray()[this.getArrayIndex()] - value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() + value.getfloatArray()[value.getArrayIndex()]);
+    // }
+    if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
+        this.setintVal(this.getintVal() -value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    return false;
+    }
+
+    public boolean mutiplyValue(Record value){
+        if(value.getType() == this.getType())
+        {
+        if(this.getType() == Record.tInt){
+            this.setintVal(this.getintVal()*value.getintVal());
+        }
+        if (this.getType() == Record.tFloat){
+             this.setfloatVal(this.getfloatVal()*value.getfloatVal());
+        }
+        if (this.getType() == Record.tIntArray){
+            this.getIntArray()[getArrayIndex()] *= value.getIntArray()[value.getArrayIndex()];
+        }
+        if (this.getType() == Record.tFloatArray){
+             this.getfloatArray()[getArrayIndex()] *= value.getfloatArray()[value.getArrayIndex()];
+        }
+        return true;
+    }
+    if((value.getType() == Record.tInt && this.getType() == Record.tFloat) || ( value.getType() == Record.tFloat && this.getType() == Record.tInt)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloat && this.getType() == Record.tIntArray)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)){
+        this.setType(Record.tFloat);
+        this.setfloatVal(this.getValue() * value.getValue());
+        return true;
+    }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tInt){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getintVal() - value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tIntArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() - value.getIntArray()[value.getArrayIndex()]);
+    // }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tIntArray){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getIntArray()[this.getArrayIndex()] - value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() + value.getfloatArray()[value.getArrayIndex()]);
+    // }
+    if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
+        this.setintVal(this.getintVal() *value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    return false;
+    }
+
+    public boolean divideValue(Record value){
+        if(value.getType() == this.getType())
+        {
+        if(this.getType() == Record.tInt){
+            this.setintVal(this.getintVal()/value.getintVal());
+        }
+        if (this.getType() == Record.tFloat){
+             this.setfloatVal(this.getfloatVal()/value.getfloatVal());
+        }
+        if (this.getType() == Record.tIntArray){
+            this.getIntArray()[getArrayIndex()] /= value.getIntArray()[value.getArrayIndex()];
+        }
+        if (this.getType() == Record.tFloatArray){
+             this.getfloatArray()[getArrayIndex()] /= value.getfloatArray()[value.getArrayIndex()];
+        }
+        return true;
+    }
+    if((value.getType() == Record.tInt && this.getType() == Record.tFloat) || ( value.getType() == Record.tFloat && this.getType() == Record.tInt)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloat && this.getType() == Record.tIntArray)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)){
+        this.setType(Record.tFloat);
+        this.setfloatVal(this.getValue() / value.getValue());
+        return true;
+    }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tInt){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getintVal() - value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tIntArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() - value.getIntArray()[value.getArrayIndex()]);
+    // }
+    // if( value.getType() == Record.tFloat && this.getType() == Record.tIntArray){
+    //     this.setType(Record.tFloat);
+    //     this.setfloatVal(this.getIntArray()[this.getArrayIndex()] - value.getfloatVal());
+    // }
+    // if( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat){
+    //     this.setfloatVal(this.getfloatVal() + value.getfloatArray()[value.getArrayIndex()]);
+    // }
+    if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
+        this.setintVal(this.getintVal() /value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    return false;
+    }
+
 
     public static int tInt = 0;
-    public static int tChar = 1;
+    public static int tbool = 1;
     public static int tFloat = 2;
     public static int tIntArray = 3;
-    public static int tCharArray = 4;
+    public static int tboolArray = 4;
     public static int tFloatArray = 5;
 
     public int getLevel() {
@@ -127,12 +331,12 @@ public class Record {
         this.intVal = intVal;
     }
 
-    public char getcharVal() {
-        return charVal;
+    public boolean getboolVal() {
+        return boolVal;
     }
 
-    public void setcharVal(char charVal) {
-        this.charVal = charVal;
+    public void setboolVal(boolean boolVal) {
+        this.boolVal = boolVal;
     }
     public float getfloatVal() {
         return floatVal;
@@ -150,12 +354,12 @@ public class Record {
         this.intArray = intArray;
     }
 
-    public char[] getcharArray(){
-        return charArray;
+    public boolean[] getboolArray(){
+        return boolArray;
     }
 
-    public void setcharArray(char[] charArray){
-        this.charArray = charArray;
+    public void setboolArray(boolean[] boolArray){
+        this.boolArray = boolArray;
     }
 
     public float[] getfloatArray() {

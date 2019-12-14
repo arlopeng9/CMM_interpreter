@@ -44,4 +44,16 @@ public final class TreeNodeType{
     public static int logical_factor1 = 36;  //逻辑因式1
     public static int logical_factor2 = 37;  //逻辑因式2
 
+    public static int print_function = 38;  //print函数
+    public static int printf_function = 39;  //printf函数
+    public static int scan_functon = 40;  //scan函数
+    public static int scanf_function = 41;  //scanf函数
+
+    public static int para_list = 42;  //参数列表
+    public static int para = 43;  //参数列表
+    public static int para_closure = 44;  //参数列表
+    public static int astament = 45; //一条语句
+
+    public static int continue_statment = 46;  //continue语句
+    public static int break_statment = 47; //break语句
 }

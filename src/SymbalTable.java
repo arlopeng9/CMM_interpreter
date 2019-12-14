@@ -20,7 +20,7 @@ public class SymbalTable {
     }
 
     // 清除内层的变量（在程序执行跳出一个块的时候使用）
-    public void deleteInsideRecord(int level) {
+    public void s(int level) {
         for (int i = 0; i < table.size(); i++) {
             if (table.get(i).getLevel() >= level) {
                 table.remove(i);

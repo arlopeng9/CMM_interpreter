@@ -79,11 +79,25 @@ public final class TokenType {
 	///=运算符
 	public static final int DIVIDE_EQUAL = 43;
 	//++运算符
-	public static final int ADD_ADD = 42;
+	public static final int ADD_ADD = 44;
 	//--运算符
 	public static final int SUBSTRACT_SUBSTRACT = 45;
 	//true
 	public static final int TRUE = 46;
 	//false
 	public static final int FALSE = 47;
+	//floatVal
+	public static final int FLOATVAL = 48;
+	//intVal
+	public static final int INTVAL = 49;
+	//continue
+	public static final int CONTINUE = 50;
+	//print
+	public static final int PRINT = 51;
+	//printf
+	public static final int PRINTF = 52;
+	//scan
+	public static final int SCAN = 53;
+	//scanf
+	public static final int SCANF = 54;
 }

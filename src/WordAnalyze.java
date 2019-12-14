@@ -59,6 +59,21 @@ public class WordAnalyze {
 		case "return":
 			TokenList.add(new Token(TokenType.RETURN, word, line));
 			return true;
+		case "continue":
+			TokenList.add(new Token(TokenType.CONTINUE, word, line));
+			return true;
+		case "scanf":
+			TokenList.add(new Token(TokenType.SCANF, word, line));
+			return true;
+		case "scan":
+			TokenList.add(new Token(TokenType.SCAN, word, line));
+			return true;
+		case "print":
+			TokenList.add(new Token(TokenType.PRINT, word, line));
+			return true;
+		case "printf":
+			TokenList.add(new Token(TokenType.PRINTF, word, line));
+			return true;
 		//case "main":
 		//	TokenList.add(new Token(TokenType.MAIN, word, line));
 		//	return true;
@@ -91,7 +106,7 @@ public class WordAnalyze {
 					word += words[i];
 					i++;
 					if (i >= words.length)
-						break; // 锟叫讹拷锟角凤拷锟斤拷锟斤拷越锟斤拷
+						break; // 锟叫讹拷锟角凤拷锟斤拷锟斤拷越锟斤
 					if (words[i] == '.') // 锟斤拷锟斤拷锟叫讹拷锟角凤拷为小锟斤拷
 					{
 						point = true;
@@ -100,12 +115,15 @@ public class WordAnalyze {
 						point = false;
 					}
 				}
-				if (isLetter(words[i]) || point) { // 锟斤拷锟斤拷锟角帮拷址锟斤拷锟斤拷锟侥革拷锟叫★拷锟斤拷锟?,锟斤拷贸锟斤拷锟斤拷锟皆?为锟斤拷锟斤拷
+				if (!isDigit(words[i]) && point) { // 锟斤拷锟斤拷锟角帮拷址锟斤拷锟斤拷锟侥革拷锟叫★拷锟斤拷锟?,锟斤拷贸锟斤拷锟斤拷锟皆?为锟斤拷锟斤拷
 					word += words[i];
 					TokenList.add(new Token(TokenType.ERROR, word, line,"非法常数"));
 				} else {
 					i--;
-					TokenList.add(new Token(TokenType.CONSTANT, word, line));
+					if(pointflag > 0)
+					TokenList.add(new Token(TokenType.FLOATVAL, word, line));
+					else 
+					TokenList.add(new Token(TokenType.INTVAL, word, line));
 				}
 			} else {
 				switch (words[i]) {
