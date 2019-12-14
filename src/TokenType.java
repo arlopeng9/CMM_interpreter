@@ -82,4 +82,8 @@ public final class TokenType {
 	public static final int ADD_ADD = 42;
 	//--运算符
 	public static final int SUBSTRACT_SUBSTRACT = 45;
+	//true
+	public static final int TRUE = 46;
+	//false
+	public static final int FALSE = 47;
 }

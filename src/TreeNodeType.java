@@ -41,5 +41,7 @@ public final class TreeNodeType{
     public static int stmt_expression = 34;  //声明语句
     public static int stmt = 35;  //声明语句
 
+    public static int logical_factor1 = 36;  //逻辑因式1
+    public static int logical_factor2 = 37;  //逻辑因式2
 
 }

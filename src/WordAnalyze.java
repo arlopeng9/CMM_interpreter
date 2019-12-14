@@ -49,6 +49,14 @@ public class WordAnalyze {
 		case "bool":
 			TokenList.add(new Token(TokenType.BOOL, word, line));
 			return true;
+		case "true":
+		case "True":
+			TokenList.add(new Token(TokenType.TRUE, word, line));
+			return true;
+		case "false":
+		case "False":
+			TokenList.add(new Token(TokenType.FALSE, word, line));
+			return true;
 		case "return":
 			TokenList.add(new Token(TokenType.RETURN, word, line));
 			return true;
@@ -313,17 +321,4 @@ public class WordAnalyze {
 		return;
 	}
 
-	public static void main(String args[]) throws Exception {
-		File file = new File("D:\\data.txt");
-		// File fileout = new File("D:\\dataout.txt");//锟斤拷锟斤拷一锟斤拷fileout锟斤拷锟斤拷锟斤拷锟斤拷锟截讹拷锟斤拷锟斤拷锟斤拷锟?
-		// PrintStream ps = new PrintStream(fileout);
-		// System.setOut(ps);
-		FileReader reader = new FileReader(file);// 锟斤拷锟斤拷一锟斤拷fileReader锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷BufferedReader
-		int length = (int) file.length();
-		char buf[] = new char[length];
-		reader.read(buf);
-		reader.close();
-		WordAnalyze analyze = new WordAnalyze();
-		analyze.wordAnalyze(buf);
-	}
 }

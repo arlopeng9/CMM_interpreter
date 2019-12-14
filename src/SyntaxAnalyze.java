@@ -586,19 +586,97 @@ public void assignment(){
 //逻辑表达式
 public void logical_expression(){
     //当前token为常数、标识符、(时
-    if((curToken.type == TokenType.CONSTANT)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)){
+    if((curToken.type == TokenType.CONSTANT)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.FALSE)||(curToken.type == TokenType.TRUE)){
         addNonTerminal(TreeNodeType.logical_expression, "逻辑表达式");
-        arith_expression();
-        //当前token为<、<=、>、>=、<>、==、||、&&时
-        if((curToken.type == TokenType.MAIOR)||(curToken.type == TokenType.MENOR)||(curToken.type == TokenType.EQEQ)||(curToken.type == TokenType.UNEQ)||(curToken.type == TokenType.MEEQ)||(curToken.type == TokenType.MAEQ)||(curToken.type == TokenType.AND)||(curToken.type == TokenType.OR)){
+        logical_factor1();
+        //当前token为||时
+        if((curToken.type == TokenType.OR)){
             matchToken();
-        }else{
-            errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: ;\n";
-       }
-       arith_expression();
+            logical_expression();
+        }
+        curNode = curNode.getParentNode();
+    }else{
+        return;
+    }
+}
+//逻辑因式1
+public void logical_factor1(){
+    //当前token为常数、标识符、(时
+    if((curToken.type == TokenType.CONSTANT)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.FALSE)||(curToken.type == TokenType.TRUE)){
+        addNonTerminal(TreeNodeType.logical_factor1, "逻辑因式1");
+        logical_factor2();
+        //当前token为&&时
+        if((curToken.type == TokenType.AND)){
+            matchToken();
+            logical_factor1();
+        }       
         curNode = curNode.getParentNode();
          //当前token为标识符时
     }else{
+        return;
+    }
+}
+//判断是否是逻辑表达式,逻辑表达式返回true。
+public boolean islogical(int index){
+    Token token = tokenList.get(index);
+    int count = 0;
+    while(token.type == TokenType.LEFT_PARENTHESIS){
+            index++;
+            token = tokenList.get(index);
+            count++;
+    }
+    while(count>=1){
+        if((count == 1)&&((curToken.type == TokenType.MAIOR)||(curToken.type == TokenType.MENOR)||(curToken.type == TokenType.EQEQ)||(curToken.type == TokenType.UNEQ)||(curToken.type == TokenType.MEEQ)||(curToken.type == TokenType.MAEQ)||(curToken.type == TokenType.AND)||(curToken.type == TokenType.OR)))
+            return true;
+
+        if(token.type == TokenType.RIGHT_PARENTHESIS){
+                if(count > 1){ 
+                    count--;
+                    if((token.type == TokenType.RIGHT_PARENTHESIS)&&(count == 1))
+                    return true;
+                }
+                else if(count == 1) return false;
+            }
+        if(token.type == TokenType.LEFT_PARENTHESIS){
+                count++;
+        }
+        index++;
+        token = tokenList.get(index);
+    }
+        
+        return false;
+}
+//逻辑因式2
+public void logical_factor2(){
+    //当前token为常数、标识符、(时
+    if((curToken.type == TokenType.CONSTANT)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)){
+        addNonTerminal(TreeNodeType.logical_factor2, "逻辑因式2");
+        if(islogical(tokenIndex)){
+            matchToken();
+            logical_expression();
+            if(curToken.type == TokenType.RIGHT_PARENTHESIS){
+                matchToken();
+            }else{
+                errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: 逻辑因式2错误;\n";
+            }
+        }else{
+            arith_expression();
+            //当前token为<、<=、>、>=、<>、==、||、&&时
+            if((curToken.type == TokenType.MAIOR)||(curToken.type == TokenType.MENOR)||(curToken.type == TokenType.EQEQ)||(curToken.type == TokenType.UNEQ)||(curToken.type == TokenType.MEEQ)||(curToken.type == TokenType.MAEQ)||(curToken.type == TokenType.AND)||(curToken.type == TokenType.OR)){
+            matchToken();
+            }else{
+                errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: 逻辑因式2错误;\n";
+       }
+       arith_expression();
+    }
+
+        curNode = curNode.getParentNode();
+    }else if((curToken.type == TokenType.TRUE)||(curToken.type == TokenType.FALSE)){
+        addNonTerminal(TreeNodeType.logical_factor2, "逻辑因式2");
+        matchToken();
+        curNode = curNode.getParentNode();
+    }
+    else {
         return;
     }
 }
