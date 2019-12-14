@@ -5,11 +5,14 @@ public class Record {
     private String name;
     private int type;//数据类型
     private int intVal;//int类型数据的值
-    private float floatVal;//real类型数据的值
+    private char charVal;//char类型数据的值
+    private float floatVal;//float类型数据的值
+
     private int arrayNum;//数组类型数据的大小
     private Integer arrayIndex;//数组下标,为赋值时为空
     private int[] intArray;//int类型数组
-    private float[] floatArray;//real类型数组
+    private char[] charArray;//char类型数据的值
+    private float[] floatArray;//float类型数组
 
     public Record(int level, Token token, int type, String name, int intVal){
         this.level = level;
@@ -17,6 +20,14 @@ public class Record {
         this.type = type;
         this.name = name;
         this.intVal = intVal;
+    }
+
+    public Record(int level, Token token, int type, String name, char charVal){
+        this.level = level;
+        this.token = token;
+        this.type = type;
+        this.name = name;
+        this.charVal = charVal;
     }
 
     public Record(int level, Token token, int type, String name, float realValue){
@@ -36,6 +47,15 @@ public class Record {
         this.arrayNum = intArray.length;
     }
 
+    public Record(int level, Token token, int type, String name, char[] charArray){
+        this.level = level;
+        this.token = token;
+        this.type = type;
+        this.name = name;
+        this.charArray = charArray;
+        this.arrayNum = intArray.length;
+    }
+
     public Record(int level, Token token, int type, String name, float[] floatArray){
         this.level = level;
         this.token = token;
@@ -49,13 +69,19 @@ public class Record {
         if(this.getType() == Record.tInt){
             return this.intVal;
         }
-        if (this.getType() == Record.tReal){
+        if(this.getType() == Record.tChar){
+            return this.charVal;
+        }
+        if (this.getType() == Record.tFloat){
             return this.floatVal;
         }
         if (this.getType() == Record.tIntArray){
             return intArray[this.getArrayIndex()];
         }
-        if (this.getType() == Record.tRealArray){
+        if (this.getType() == Record.tCharArray){
+            return charArray[this.getArrayIndex()];
+        }
+        if (this.getType() == Record.tFloatArray){
             return this.floatArray[this.arrayIndex];
         }
         return 0;
@@ -63,9 +89,11 @@ public class Record {
 
 
     public static int tInt = 0;
-    public static int tReal = 1;
-    public static int tIntArray = 2;
-    public static int tRealArray = 3;
+    public static int tChar = 1;
+    public static int tFloat = 2;
+    public static int tIntArray = 3;
+    public static int tCharArray = 4;
+    public static int tFloatArray = 5;
 
     public int getLevel() {
         return level;
@@ -99,12 +127,19 @@ public class Record {
         this.intVal = intVal;
     }
 
-    public float getRealValue() {
+    public char getcharVal() {
+        return charVal;
+    }
+
+    public void setcharVal(char charVal) {
+        this.charVal = charVal;
+    }
+    public float getfloatVal() {
         return floatVal;
     }
 
-    public void setRealValue(float realValue) {
-        this.floatVal = realValue;
+    public void setfloatVal(float floatVal) {
+        this.floatVal = floatVal;
     }
 
     public int[] getIntArray() {
@@ -115,11 +150,19 @@ public class Record {
         this.intArray = intArray;
     }
 
-    public float[] getRealArray() {
+    public char[] getcharArray(){
+        return charArray;
+    }
+
+    public void setcharArray(char[] charArray){
+        this.charArray = charArray;
+    }
+
+    public float[] getfloatArray() {
         return floatArray;
     }
 
-    public void setRealArray(float[] floatArray) {
+    public void setfloatArray(float[] floatArray) {
         this.floatArray = floatArray;
     }
 
