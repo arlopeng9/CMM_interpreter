@@ -1,4 +1,4 @@
-import java.io.IOException;
+import java.util.Scanner;
 
 public class SemanticAnalyze {
     private int loop = 0;
@@ -19,15 +19,15 @@ public class SemanticAnalyze {
         if (record.getType() == Record.tFloat)
             System.out.println(record.getfloatVal());
         if (record.getType() == Record.tFloatArray)
-            System.out.println(record.getfloatArray());
+            System.out.println(record.getfloatArray()[record.getArrayIndex()]);
         if (record.getType() == Record.tInt)
             System.out.println(record.getintVal());
         if (record.getType() == Record.tIntArray)
-            System.out.println(record.getIntArray());
+            System.out.println(record.getIntArray()[record.getArrayIndex()]);
         if (record.getType() == Record.tbool)
             System.out.println(record.getboolVal());
         if (record.getType() == Record.tboolArray)
-            System.out.println(record.getboolArray());
+            System.out.println(record.getboolArray()[record.getArrayIndex()]);
     }
 
     public void printSymbalTable() {
@@ -133,6 +133,7 @@ public class SemanticAnalyze {
         if (curNode.getChildren().size() > 1) {// 数组下标不为空
             if(curNode.getChildren().get(1).getChildren().size()>2){
             curNode = curNode.getChildren().get(1).getChildren().get(1);// 因式
+
             if ((factor() != null) && factor().getType() == Record.tInt) {
                 int arrayIndex = factor().getintVal();
                 if (var.getType() == Record.tIntArray || var.getType() == Record.tFloatArray
@@ -142,14 +143,16 @@ public class SemanticAnalyze {
                         errorInfo += "数组越界: line" + curNode.getChildren().get(0).getValue().line + " " + var.getName()
                                 + "[" + var.getArrayIndex() + "] in array " + var.getName() + "[" + var.getArrayNum()
                                 + "]\n";
+                                curNode = curNode.getParentNode().getParentNode();
                         return null;
                     }
                 } else {// 普通变量但是有下标
                     errorInfo += "错误的变量使用方式：变量" + var.getName() + "不是数组\n";
+                    curNode = curNode.getParentNode().getParentNode();
                     return null;
                 }
             }
-            if ((factor() != null) && factor().getType() == Record.tIntArray) {
+           else if ((factor() != null) && factor().getType() == Record.tIntArray) {
                 int arrayIndex = factor().getIntArray()[factor().getArrayNum()];
                 if (var.getType() == Record.tIntArray || var.getType() == Record.tFloatArray
                         || var.getType() == Record.tboolArray) {
@@ -158,14 +161,17 @@ public class SemanticAnalyze {
                         errorInfo += "数组越界: line" + curNode.getChildren().get(0).getValue().line + " " + var.getName()
                                 + "[" + var.getArrayIndex() + "] in array " + var.getName() + "[" + var.getArrayNum()
                                 + "]\n";
+                                curNode = curNode.getParentNode().getParentNode();
                         return null;
                     }
                 } else {// 普通变量但是有下标
                     errorInfo += "错误的变量使用方式：变量" + var.getName() + "不是数组\n";
+                    curNode = curNode.getParentNode().getParentNode();
                     return null;
                 }
             } else if ((factor() != null)) {
                 errorInfo += "数组下标不为整数" + var.getName() + "\n";
+                curNode = curNode.getParentNode().getParentNode();
                 return null;
             } 
             curNode = curNode.getParentNode().getParentNode();
@@ -174,13 +180,7 @@ public class SemanticAnalyze {
             }
         }
         
-        if (var.getType() == Record.tIntArray || var.getType() == Record.tFloatArray) {// 如果为数组变量但没有数组下标
-            if (var.getArrayIndex() == null) {
-                errorInfo += "错误的数组变量使用方式： line " + curNode.getChildren().get(0).getValue().line + " "
-                        + curNode.getChildren().get(0).getValue().strval + "\n";
-            }
-            return null;
-        }
+        
         return var;
     }
 
@@ -189,7 +189,7 @@ public class SemanticAnalyze {
         Record var = null;
         if (curNode.getChildren() != null) {
             curNode = curNode.getChildren().get(0);
-            if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.L_SQUARE_BRACKET) {
+            if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.LEFT_PARENTHESIS) {
                 curNode = curNode.getParentNode().getChildren().get(1);
                 var =  arith_expression();
             } else if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.FLOATVAL) {
@@ -204,9 +204,30 @@ public class SemanticAnalyze {
                     if (var.getType() != Record.tbool && var.getType() != Record.tboolArray)
                     curNode = curNode.getParentNode();
                     return var;
-                } else {
-                    errorInfo += "未声明变量：line " + curNode.getChildren().get(0).getValue().line + " "
-                            + curNode.getChildren().get(0).getValue().strval + "\n";
+                } 
+            }else if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.SUBSTRACT) {
+                curNode = curNode.getParentNode().getChildren().get(1);
+                if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.LEFT_PARENTHESIS) {
+                    curNode = curNode.getParentNode().getChildren().get(1);
+                    var =  arith_expression();
+                    Record var1 = null;
+                    if(var!=null)
+                    var1 = (Record)var.clone();
+                    var1.substractValue(var1);
+                    var1.substractValue(var1);   //减两次相当于取反  
+                } else if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.FLOATVAL) {
+                    var = new Record(level, curNode.getValue(), Record.tFloat, "",
+                            -Float.parseFloat(curNode.getValue().strval));
+                } else if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.INTVAL) {
+                    var = new Record(level, curNode.getValue(), Record.tInt, "",
+                            -Integer.parseInt(curNode.getValue().strval));
+                } else if (curNode.getType() == TreeNodeType.variable) {
+                    var = variable();
+                    Record var1 = null;
+                    if(var!=null)
+                    var1 = (Record)var.clone();
+                    var1.substractValue(var1);
+                    var1.substractValue(var1);   //减两次相当于取反  
                 }
             }
             curNode = curNode.getParentNode();
@@ -219,6 +240,9 @@ public class SemanticAnalyze {
     public Record arith_expression() {
         curNode = curNode.getChildren().get(0); // 因子
         Record var = factors();
+        if(var!=null){
+            var = (Record) var.clone();
+        }
         if(curNode.getParentNode().getChildren().size()>1){
         curNode = curNode.getParentNode().getChildren().get(1);// 项
         if (var != null) {
@@ -232,7 +256,10 @@ public class SemanticAnalyze {
     // 因子
     public Record factors() {
         curNode = curNode.getChildren().get(0); // 因式1
-        Record var = factor1();
+        Record var = null;
+        if(factor1()!=null){
+            var = (Record) factor1().clone();
+            }
         if(curNode.getParentNode().getChildren().size()>1){
         curNode = curNode.getParentNode().getChildren().get(1);// 因式递归
         if (var != null) {
@@ -249,22 +276,33 @@ public class SemanticAnalyze {
         curNode = curNode.getChildren().get(0); // 因式
         Record var = null;
         if (curNode.getType() == TreeNodeType.factor) {
-            var = factor();
-            if (curNode.getChildren().size() > 1) {
+            if(factor()!=null){
+            var = (Record) factor().clone();
+            }
+            if(var!=null){
+            if (curNode.getParentNode().getChildren().size() > 1) {
                 if (var != null && var.getType() == Record.tInt) {
                     if (curNode.getParentNode().getChildren().get(1).getValue().type == TokenType.ADD_ADD) {
-                        var.setintVal(var.getintVal() + 1);
+                        int[] tmp = var.getIntArray();
+                        tmp[var.getArrayIndex()] = var.getIntArray()[var.getArrayIndex()]+1;
+                        var.setIntArray(tmp);
                     }
                     if (curNode.getParentNode().getChildren().get(1).getValue().type == TokenType.SUBSTRACT_SUBSTRACT) {
-                        var.setintVal(var.getintVal() - 1);
+                        int[] tmp = var.getIntArray();
+                        tmp[var.getArrayIndex()] = var.getIntArray()[var.getArrayIndex()]-1;
+                        var.setIntArray(tmp);
                     }
                 }
                 if (var != null && var.getType() == Record.tIntArray) {
                     if (curNode.getParentNode().getChildren().get(1).getValue().type == TokenType.ADD_ADD) {
-                        var.setintVal(var.getIntArray()[var.getArrayIndex()] + 1);
+                        int[] tmp = var.getIntArray();
+                        tmp[var.getArrayIndex()] = var.getIntArray()[var.getArrayIndex()]+1;
+                        var.setIntArray(tmp);
                     }
                     if (curNode.getParentNode().getChildren().get(1).getValue().type == TokenType.SUBSTRACT_SUBSTRACT) {
-                        var.setintVal(var.getIntArray()[var.getArrayIndex()] - 1);
+                        int[] tmp = var.getIntArray();
+                        tmp[var.getArrayIndex()] = var.getIntArray()[var.getArrayIndex()]-1;
+                        var.setIntArray(tmp);
                     }
                 } else if (var != null) {
                     errorInfo += "只有整数类型才能++或--：line " + curNode.getChildren().get(0).getValue().line + " "
@@ -272,23 +310,32 @@ public class SemanticAnalyze {
                 }
             }
         }
+        }
         if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.ADD_ADD) {
-            var = factor();
+            if(factor()!=null){
+                var = (Record) factor().clone();
+                }
             if (var != null && var.getType() == Record.tInt) {
                 var.setintVal(var.getintVal() + 1);
             } else if (var != null && var.getType() == Record.tIntArray) {
-                var.setintVal(var.getIntArray()[var.getArrayIndex()] + 1);
+                int[] tmp = var.getIntArray();
+                tmp[var.getArrayIndex()] = var.getIntArray()[var.getArrayIndex()]+1;
+                var.setIntArray(tmp);
             } else if (var != null) {
                 errorInfo += "只有整数类型才能++或--：line " + curNode.getChildren().get(0).getValue().line + " "
                         + curNode.getChildren().get(0).getValue().strval + "\n";
             }
         }
         if ((curNode.getValue()!=null)&&curNode.getValue().type == TokenType.SUBSTRACT_SUBSTRACT) {
-            var = factor();
+            if(factor()!=null){
+                var = (Record) factor().clone();
+                }
             if (var != null && var.getType() == Record.tInt) {
                 var.setintVal(var.getintVal() - 1);
             } else if (var != null && var.getType() == Record.tIntArray) {
-                var.setintVal(var.getIntArray()[var.getArrayIndex()] - 1);
+                int[] tmp = var.getIntArray();
+                tmp[var.getArrayIndex()] = var.getIntArray()[var.getArrayIndex()]-1;
+                var.setIntArray(tmp);
             } else if (var != null) {
                 errorInfo += "只有整数类型才能++或--：line " + curNode.getChildren().get(0).getValue().line + " "
                         + curNode.getChildren().get(0).getValue().strval + "\n";
@@ -304,18 +351,47 @@ public class SemanticAnalyze {
     public Record term(Record record) {
         if (curNode.getChildren().size() > 0) {
             curNode = curNode.getChildren().get(0);
-            Record var = factors();
-            var = term(var);
+            Record var= null;
             if(curNode.getValue()!=null){
             switch (curNode.getValue().type) {
             case TokenType.ADD:
+            if(curNode.getParentNode().getChildren().size() > 1){
+                if(curNode.getParentNode().getChildren().size()>1){
+                curNode = curNode.getParentNode().getChildren().get(1);
+                if(factors()!=null)
+                var = (Record) factors().clone();
                 if ((record.getType() != Record.tbool && record.getType() != Record.tboolArray))
                     record.addValue(var);
+                if(curNode.getParentNode().getChildren().size() > 2)
+                {
+                    curNode = curNode.getParentNode().getChildren().get(2);
+                    record = term(record);
+                }
+            }
+                
+
+            }
                 curNode = curNode.getParentNode();
                 return record;
             case TokenType.SUBSTRACT:
+            if(curNode.getParentNode().getChildren().size() > 1){
+                curNode = curNode.getParentNode().getChildren().get(1);
+                if(factors()!=null)
+                var = (Record) factors().clone();
+
                 if ((record.getType() != Record.tbool && record.getType() != Record.tboolArray))
                     record.substractValue(var);
+
+                if(curNode.getParentNode().getChildren().size() > 2)
+                {
+                    curNode = curNode.getParentNode().getChildren().get(2);
+               
+                    record = term(record);
+                }
+
+            }
+              
+               
                 curNode = curNode.getParentNode();
                 return record;
             default:
@@ -323,6 +399,7 @@ public class SemanticAnalyze {
                 return null;
             }
         }
+        curNode = curNode.getParentNode();
         return null;
         } else {
             return null;
@@ -333,25 +410,51 @@ public class SemanticAnalyze {
     public Record factor_recursion(Record record) {
         if (curNode.getChildren().size() > 0) {
             curNode = curNode.getChildren().get(0);
-            Record var = factor1();
-            var = factor_recursion(var);
+            Record var = null;
             if((curNode.getValue()!=null)){
             switch (curNode.getValue().type) {
             case TokenType.MULTIPLY:
-                if ((record.getType() != Record.tbool && record.getType() != Record.tboolArray))
+            if(curNode.getParentNode().getChildren().size() > 1){
+                curNode = curNode.getParentNode().getChildren().get(1);
+                
+                if(factor1()!=null){
+                    var = (Record) factor1().clone();
+                 }
+
+                 if ((record.getType() != Record.tbool && record.getType() != Record.tboolArray))
                     record.mutiplyValue(var);
+                }
+                 if(curNode.getParentNode().getChildren().size()>2){
+                 curNode = curNode.getParentNode().getChildren().get(2);
+                 record = factor_recursion(record);
+                 }
+                
                 curNode = curNode.getParentNode();
                 return record;
             case TokenType.DIVIDE:
+            if(curNode.getParentNode().getChildren().size() > 1){
+                curNode = curNode.getParentNode().getChildren().get(1);
+                if(factor1()!=null){
+                    var = (Record) factor1().clone();
+                }
                 if (var.getValue() != 0) {
                     if ((record.getType() != Record.tbool && record.getType() != Record.tboolArray))
                         record.divideValue(var);
-                    curNode = curNode.getParentNode();
-                    return record;
                 } else {
                     errorInfo += "除数不能为0：line " + curNode.getChildren().get(0).getValue().line + " "
                             + curNode.getChildren().get(0).getValue().strval + "\n";
+                            curNode = curNode.getParentNode();
+                            return null;
                 }
+                if(curNode.getParentNode().getChildren().size()>2){
+                curNode = curNode.getParentNode().getChildren().get(2);
+                 record = factor_recursion(record);
+                 }
+            }
+            
+            curNode = curNode.getParentNode();
+            return record;
+               
             
             default:
                 curNode = curNode.getParentNode();
@@ -359,6 +462,7 @@ public class SemanticAnalyze {
             }
            
             }
+            curNode = curNode.getParentNode();
             return null;
         } else {
             return null;
@@ -418,31 +522,11 @@ public class SemanticAnalyze {
         curNode = curNode.getParentNode().getChildren().get(2);// 赋初值
         Record initval = initialvalue(var);
         if (initval != null) {
-            if ((initval.getType() == Record.tFloat || initval.getType() == Record.tFloatArray)
-                    && (var.getType() == Record.tInt || var.getType() == Record.tIntArray)) {
-                errorInfo += "无法从float类型转为int类型：line " + curNode.getChildren().get(0).getValue().line + " "
-                        + curNode.getChildren().get(0).getValue().strval + "\n";
-            } else if ((var.getType() == Record.tbool || var.getType() == Record.tboolArray)
-                    && (initval.getType() != Record.tbool || initval.getType() != Record.tboolArray)) {
-                errorInfo += "无法从其他类型转为bool类型：line " + curNode.getChildren().get(0).getValue().line + " "
-                        + curNode.getChildren().get(0).getValue().strval + "\n";
-            } else if ((var.getType() == Record.tIntArray || var.getType() == Record.tboolArray
-                    || var.getType() == Record.tFloatArray)
-                    && (initval.getType() == Record.tInt || initval.getType() != Record.tbool
-                            || initval.getType() == Record.tFloat)) {
-                errorInfo += "无法给数组赋值：line " + curNode.getChildren().get(0).getValue().line + " "
-                        + curNode.getChildren().get(0).getValue().strval + "\n";
-            } else if ((initval.getType() == Record.tIntArray || initval.getType() == Record.tboolArray
-                    || initval.getType() == Record.tFloatArray)
-                    && (var.getType() == Record.tInt || var.getType() != Record.tbool
-                            || var.getType() == Record.tFloat)) {
-                errorInfo += "数组无法给其他类型赋值：line " + curNode.getChildren().get(0).getValue().line + " "
-                        + curNode.getChildren().get(0).getValue().strval + "\n";
-            } else {
+           
                 var.setValue(initval);
             }
         }
-    }
+    
         curNode = curNode.getParentNode();
 
     }
@@ -554,8 +638,9 @@ public class SemanticAnalyze {
         curNode = curNode.getChildren().get(1);
         functionBlock();
         curNode = curNode.getParentNode();
-        level--;
         symbalTable.s(level);
+        level--;
+        
     }
 
     // 函数块
@@ -693,8 +778,16 @@ public class SemanticAnalyze {
                 continue_statment();
                  }
             }
-            level--;
             symbalTable.s(level);
+            level--;
+           
+            curNode = curNode.getParentNode();
+        }
+    }
+
+    public void whereisloop(){
+        curNode = curNode.getParentNode();
+        while((curNode.getType() == TreeNodeType.forloop || curNode.getType() == TreeNodeType.whileloop)&&(curNode != headNode)){
             curNode = curNode.getParentNode();
         }
     }
@@ -702,25 +795,89 @@ public class SemanticAnalyze {
      // break语句
      public void break_statment() {
         curNode = curNode.getChildren().get(0);
-        if(curNode.getType() == TreeNodeType.break_statment){
-        
+        whileloop();
+        if(curNode.getType() == TreeNodeType.forloop){
+            curNode = curNode.getParentNode();
+            curNode = curNode.getParentNode().getChildren().get(2);
+            boolean var = logical_expression();
+            while (var) {
+                curNode = curNode.getParentNode().getChildren().get(4);
+                factor1();
+                curNode = curNode.getParentNode().getChildren().get(6);
+                if(curNode.getType() == TreeNodeType.co_function){
+                    co_function();
+                    }else if(curNode.getType() == TreeNodeType.astament){
+                    astament();
+                    }else{
+                        errorInfo += "cssssss";
+                    }
+                curNode = curNode.getParentNode().getChildren().get(2);
+                var = logical_expression();
     }
         curNode = curNode.getParentNode();
 
     }
+}
 
 
+         // continue语句
+         public void continue_statment() {
+            curNode = curNode.getChildren().get(0);
+            whileloop();
+            if(curNode.getType() == TreeNodeType.forloop){
+                symbalTable.s(level);
+                curNode = curNode.getChildren().get(1);
+                boolean var = logical_expression();
+                while (var) {
+                    curNode = curNode.getParentNode().getChildren().get(4);
+                    factor1();
+                    curNode = curNode.getParentNode().getChildren().get(6);
+                    if(curNode.getType() == TreeNodeType.co_function){
+                        co_function();
+                        }else if(curNode.getType() == TreeNodeType.astament){
+                        astament();
+                        }else{
+                            errorInfo += "cssssss";
+                        }
+                    curNode = curNode.getParentNode().getChildren().get(2);
+                    var = logical_expression();
+            }
+            curNode = curNode.getParentNode();
+    
+        }
+        if(curNode.getType() == TreeNodeType.whileloop){
+            symbalTable.s(level);
+            curNode = curNode.getChildren().get(1);
+            boolean var = logical_expression();
+            while (var) {
+                curNode = curNode.getParentNode().getChildren().get(6);
+                if(curNode.getType() == TreeNodeType.co_function){
+                    co_function();
+                    }else if(curNode.getType() == TreeNodeType.astament){
+                    astament();
+                    }else{
+                        errorInfo += "cssssss";
+                    }
+                curNode = curNode.getParentNode().getChildren().get(2);
+                var = logical_expression();
+        }
+        curNode = curNode.getParentNode();
+
+    }
+    }
+    
     // print函数
     public void print_function() {
         curNode = curNode.getChildren().get(2);
         if(curNode.getType() == TreeNodeType.para){
-        TreeNode tnode = curNode.getChildren().get(0);
-        if (tnode.getValue()!= null &&((tnode.getValue().type == TokenType.FLOATVAL) || (tnode.getValue().type == TokenType.INTVAL)))
-            System.out.println(tnode.getValue().strval);
-        if (tnode.getType() == TreeNodeType.variable) {
-            Record var = symbalTable.getRecordByName(tnode.getChildren().get(0).getValue().strval);
+        curNode = curNode.getChildren().get(0);
+        if (curNode.getValue()!= null &&((curNode.getValue().type == TokenType.FLOATVAL) || (curNode.getValue().type == TokenType.INTVAL)))
+            System.out.println(curNode.getValue().strval);
+        if (curNode.getType() == TreeNodeType.variable) {
+            Record var = variable();
             printRecord(var);
         }
+        curNode = curNode.getParentNode();
     }
         curNode = curNode.getParentNode();
 
@@ -744,25 +901,22 @@ public class SemanticAnalyze {
     // scan函数
     public void scan_function() {
         curNode = curNode.getChildren().get(2);
-        TreeNode tnode = curNode.getChildren().get(0).getChildren().get(0);
-        if (tnode.getType() == TreeNodeType.variable) {
-            byte m[] = null;
-            try {
-                System.in.read(m);
-            } catch (IOException e) {
-                System.out.println("读入异常");
-                e.printStackTrace();
-            }
-            Record var = symbalTable.getRecordByName(tnode.getChildren().get(0).getValue().strval);
-            if (var.getType() == Record.tInt )
-                var.setintVal(Integer.parseInt(new String(m)));
-            else if (var.getType() == Record.tIntArray )
-                var.getIntArray()[var.getArrayIndex()] = Integer.parseInt(new String(m));
-            else if (var.getType() == Record.tFloat)
-                var.setfloatVal(Float.parseFloat(new String(m)));
-            else if (var.getType() == Record.tFloatArray)
-                var.getfloatArray()[var.getArrayIndex()] = Float.parseFloat(new String(m));
-            else errorInfo += "scan函数无法使用该类型参数：line " + var.getToken().line + " " + var.getToken().strval + "\n";
+        curNode = curNode.getChildren().get(0);
+        if (curNode.getType() == TreeNodeType.variable) {
+                Scanner sc = new Scanner(System.in); 
+                String m = sc.nextLine();
+                Record var = variable();
+                curNode = curNode.getParentNode();
+                if (var.getType() == Record.tInt )
+                    var.setintVal(Integer.parseInt(m));
+                else if (var.getType() == Record.tIntArray )
+                    var.getIntArray()[var.getArrayIndex()] = Integer.parseInt(m);
+                else if (var.getType() == Record.tFloat)
+                    var.setfloatVal(Float.parseFloat(m));
+                else if (var.getType() == Record.tFloatArray)
+                    var.getfloatArray()[var.getArrayIndex()] = Float.parseFloat(m);
+                else errorInfo += "scan函数无法使用该类型参数：line " + var.getToken().line + " " + var.getToken().strval + "\n";
+
         }
         curNode = curNode.getParentNode();
     }
@@ -770,28 +924,26 @@ public class SemanticAnalyze {
     // scanf函数
     public void scanf_function()  {
         curNode = curNode.getChildren().get(2);
-        TreeNode tnode = curNode.getChildren().get(0).getChildren().get(0);
-        if (tnode.getType() == TreeNodeType.variable) {
-            byte m[] = null;
-            try {
-                System.in.read(m);
-            } catch (IOException e) {
-                System.out.println("读入异常");
-                e.printStackTrace();
-            }
-            Record var = symbalTable.getRecordByName(tnode.getChildren().get(0).getValue().strval);
-            if (var.getType() == Record.tInt )
-                var.setintVal(Integer.parseInt(new String(m)));
-            else if (var.getType() == Record.tIntArray )
-                var.getIntArray()[var.getArrayIndex()] = Integer.parseInt(new String(m));
-            else if (var.getType() == Record.tFloat)
-                var.setfloatVal(Float.parseFloat(new String(m)));
-            else if (var.getType() == Record.tFloatArray)
-                var.getfloatArray()[var.getArrayIndex()] = Float.parseFloat(new String(m));
-            else errorInfo += "scan函数无法使用该类型参数：line " + var.getToken().line + " " + var.getToken().strval + "\n";
+        curNode = curNode.getChildren().get(0).getChildren().get(0);
+        if (curNode.getType() == TreeNodeType.variable) {
+                Scanner sc = new Scanner(System.in); 
+                String m = sc.nextLine();
+                Record var = variable();
+                curNode = curNode.getParentNode();
+                if (var.getType() == Record.tInt )
+                    var.setintVal(Integer.parseInt(m));
+                else if (var.getType() == Record.tIntArray )
+                    var.getIntArray()[var.getArrayIndex()] = Integer.parseInt(m);
+                else if (var.getType() == Record.tFloat)
+                    var.setfloatVal(Float.parseFloat(m));
+                else if (var.getType() == Record.tFloatArray)
+                    var.getfloatArray()[var.getArrayIndex()] = Float.parseFloat(m);
+                else errorInfo += "scan函数无法使用该类型参数：line " + var.getToken().line + " " + var.getToken().strval + "\n";
+
         }
-        curNode = curNode.getParentNode();
+        curNode = curNode.getParentNode().getParentNode();
     }
+
 
     // for循环
     public void forloop() {
@@ -814,7 +966,7 @@ public class SemanticAnalyze {
             curNode = curNode.getParentNode().getChildren().get(6);
             if(curNode.getType() == TreeNodeType.co_function){
                 co_function();
-                }else if(curNode.getType() == TreeNodeType.co_function){
+                }else if(curNode.getType() == TreeNodeType.astament){
                 astament();
                 }else{
                     errorInfo += "cssssss";
@@ -842,7 +994,7 @@ public class SemanticAnalyze {
             curNode = curNode.getParentNode().getChildren().get(3);
             if(curNode.getType() == TreeNodeType.co_function){
                 co_function();
-                }else if(curNode.getType() == TreeNodeType.co_function){
+                }else if(curNode.getType() == TreeNodeType.astament){
                 astament();
                 }else{
                     errorInfo += "cssssss";
@@ -856,7 +1008,7 @@ public class SemanticAnalyze {
     // 条件语句
     public void if_statement() {
         curNode = curNode.getChildren().get(1);
-        if_statement();
+        ifblock();
         curNode = curNode.getParentNode();
     }
 
@@ -868,14 +1020,16 @@ public class SemanticAnalyze {
             curNode = curNode.getParentNode().getChildren().get(3);
             if(curNode.getType() == TreeNodeType.co_function){
             co_function();
-            }else if(curNode.getType() == TreeNodeType.co_function){
+            }else if(curNode.getType() == TreeNodeType.astament){
             astament();
             }else{
                 errorInfo += "cssssss";
             }
         } else {
+            if(curNode.getParentNode().getChildren().size()>4){
             curNode = curNode.getParentNode().getChildren().get(4);
             else_statement();
+            }
         }
         curNode = curNode.getParentNode();
     }
@@ -886,7 +1040,7 @@ public class SemanticAnalyze {
             curNode = curNode.getChildren().get(1);
             if(curNode.getType() == TreeNodeType.co_function){
                 co_function();
-                }else if(curNode.getType() == TreeNodeType.co_function){
+                }else if(curNode.getType() == TreeNodeType.astament){
                 astament();
                 }else{
                     errorInfo += "cssssss";
@@ -976,6 +1130,7 @@ public class SemanticAnalyze {
                         + curNode.getChildren().get(0).getValue().strval + "\n";
 
             } else {
+                curNode = curNode.getParentNode().getChildren().get(1);// 赋值
                 assign(var1);
             }
             curNode = curNode.getParentNode();
@@ -984,27 +1139,42 @@ public class SemanticAnalyze {
 
     // 逻辑表达式
     public boolean logical_expression() {
-        curNode = curNode.getChildren().get(0);
+       curNode = curNode.getChildren().get(0);
         if (curNode.getParentNode().getChildren().size() > 1) {
             boolean leftpart = logical_factor1();
+            if(leftpart == true){
+                curNode = curNode.getParentNode();
+                return true;
+            }
+            boolean rightpart = false;
+            if(curNode.getParentNode().getChildren().size()>2){
             curNode = curNode.getParentNode().getChildren().get(2);
-            boolean rightpart = logical_expression();
+            rightpart = logical_expression();
+            }
             curNode = curNode.getParentNode();
             return leftpart || rightpart;
         } else {
-            curNode = curNode.getParentNode();
             boolean result =  logical_factor1();
+            curNode = curNode.getParentNode();
             return result;
         }
     }
 
     // 逻辑因式1
     public boolean logical_factor1() {
+        if(curNode.getChildren().size()>0){
         curNode = curNode.getChildren().get(0);
         if (curNode.getParentNode().getChildren().size() > 1) {
             boolean leftpart = logical_factor2();
+            if(leftpart == false){
+                curNode = curNode.getParentNode();
+                return false;
+            }
+            boolean rightpart = false;
+            if(curNode.getParentNode().getChildren().size()>2){
             curNode = curNode.getParentNode().getChildren().get(2);
-            boolean rightpart = logical_factor1();
+            rightpart =  logical_factor1();
+            }
             curNode = curNode.getParentNode();
             return leftpart && rightpart;
         } else {
@@ -1012,6 +1182,8 @@ public class SemanticAnalyze {
             curNode = curNode.getParentNode();
             return res;
         }
+    }
+    return false;
     }
 
     // 逻辑因式2
@@ -1028,8 +1200,9 @@ public class SemanticAnalyze {
             Record var1 = arith_expression();
             curNode = curNode.getParentNode().getChildren().get(2);
             Record var2 = arith_expression();
-            curNode = curNode.getParentNode().getChildren().get(1).getChildren().get(0);
+            curNode = curNode.getParentNode().getChildren().get(1);
             boolean res = false;
+            try{
             if((curNode.getValue()!=null)){
             switch (curNode.getValue().type) {
             case TokenType.MAIOR:
@@ -1052,8 +1225,10 @@ public class SemanticAnalyze {
                 break;
             default:break;
             }
+        }}catch(Exception e){
+            System.out.println(e);
         }
-            curNode = curNode.getParentNode().getParentNode();
+            curNode = curNode.getParentNode();
             return res;
         } else {
             curNode = curNode.getChildren().get(1);
@@ -1071,71 +1246,84 @@ public class SemanticAnalyze {
         if((curNode.getValue()!=null)){
         switch(curNode.getValue().type){
             case TokenType.EQUAL:
-                curNode = curNode.getParentNode().getChildren().get(0);
+                curNode = curNode.getParentNode().getChildren().get(1);
                 var = rightVal(record);
+                curNode = curNode.getParentNode().getParentNode().getChildren().get(0);
+                record = variable();
+                curNode = curNode.getParentNode().getChildren().get(1);
                 if(!record.setValue(var)) 
                 errorInfo += "赋值类型不兼容：line " + record.getToken().line + " "
                 + record.getToken().strval + "\n";
-                curNode = curNode.getParentNode();
                 break;
             case TokenType.ADD_EQUAL:
-                 curNode = curNode.getParentNode().getChildren().get(0);
+                 curNode = curNode.getParentNode().getChildren().get(1);
                 var = rightVal(record);
+                curNode = curNode.getParentNode().getParentNode().getChildren().get(0);
+                record = variable();
+                curNode = curNode.getParentNode().getChildren().get(1);
                 if(!record.addValue(var)) 
                 errorInfo += "赋值类型不兼容：line " + record.getToken().line + " "
                 + record.getToken().strval + "\n";
-                curNode = curNode.getParentNode();
                 break;
             case TokenType.SUBSTRACT_EQUAL:
-                curNode = curNode.getParentNode().getChildren().get(0);
+                curNode = curNode.getParentNode().getChildren().get(1);
                 var = rightVal(record);
+                curNode = curNode.getParentNode().getParentNode().getChildren().get(0);
+                record = variable();
+                curNode = curNode.getParentNode().getChildren().get(1);
                 if(!record.substractValue(var)) 
                 errorInfo += "赋值类型不兼容：line " + record.getToken().line + " "
                 + record.getToken().strval + "\n";
-                curNode = curNode.getParentNode();
                 break;
             case TokenType.MULTIPLY_EQUAL:
-                curNode = curNode.getParentNode().getChildren().get(0);
+                curNode = curNode.getParentNode().getChildren().get(1);
                 var = rightVal(record);
+                curNode = curNode.getParentNode().getParentNode().getChildren().get(0);
+                record = variable();
+                curNode = curNode.getParentNode().getChildren().get(1);
                 if(!record.mutiplyValue(var)) 
                 errorInfo += "赋值类型不兼容：line " + record.getToken().line + " "
                 + record.getToken().strval + "\n";
-                curNode = curNode.getParentNode();
                 break;
             case TokenType.ADD_ADD:
                 if(record.getType() == Record.tInt ){
                 record.setintVal(record.getintVal() + 1);
                 }
                 else if(record.getType() == Record.tIntArray ){
-                    record.setintVal(record.getIntArray()[record.getArrayIndex()] + 1);
+                    int[] tmp = record.getIntArray();
+                    tmp[record.getArrayIndex()] = record.getIntArray()[record.getArrayIndex()]+1;
+                    record.setIntArray(tmp);
                 }else{
                     errorInfo += "只有整数类型才能++或--：line " + record.getToken().line + " "
                     + record.getToken().strval + "\n";
                 }
+                curNode = curNode.getParentNode();
                 break;
             case TokenType.SUBSTRACT_SUBSTRACT:
                 if(record.getType() == Record.tInt ){
                 record.setintVal(record.getintVal() - 1);
                 }
                 else if(record.getType() == Record.tIntArray ){
-                    record.setintVal(record.getIntArray()[record.getArrayIndex()] - 1);
+                    int[] tmp = record.getIntArray();
+                    tmp[record.getArrayIndex()] = record.getIntArray()[record.getArrayIndex()]-1;
+                    record.setIntArray(tmp);
                 }else{
                     errorInfo += "只有整数类型才能++或--：line " + record.getToken().line + " "
                     + record.getToken().strval + "\n";
                 }
+                curNode = curNode.getParentNode();
                 break;
             default:break;
                 
         }
     }
-        curNode = curNode.getParentNode();
         return record;
        
     }
     
         //声明语句闭包
         public void stmt_expression_closure(){
-            if(curNode.getChildren().size()>0){
+                if(curNode.getChildren().size()>0 ){
                 curNode = curNode.getChildren().get(0);
                 stmt_expression();
                 if(curNode.getParentNode().getChildren().size()>1){

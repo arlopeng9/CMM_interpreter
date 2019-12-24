@@ -97,7 +97,7 @@ public class WordAnalyze {
 				if (!isKeyword(word, line)) { // 锟叫讹拷锟角凤拷为锟截硷拷锟斤拷
 					TokenList.add(new Token(TokenType.IDENTIFIER, word, line));
 				}
-			} else if (isDigit(words[i])) { // 锟斤拷锟斤拷
+			} else if(isDigit(words[i])) { // 锟斤拷锟斤拷
 				boolean point = false; // 锟斤拷前锟街凤拷锟角凤拷为小锟斤拷锟斤拷
 				int pointflag = 0; // 小锟斤拷锟斤拷锟斤拷锟?
 				while (isDigit(words[i]) || point) {
@@ -226,10 +226,10 @@ public class WordAnalyze {
 							TokenList.add(new Token(TokenType.UNEQ, word, line));
 						} else { // 锟斤拷锟斤拷锟斤拷锟绞讹拷锟轿?<
 							i--;
-							TokenList.add(new Token(TokenType.MAIOR, word, line));
+							TokenList.add(new Token(TokenType.MENOR, word, line));
 						}
 					} else
-						TokenList.add(new Token(TokenType.MAIOR, word, line));
+						TokenList.add(new Token(TokenType.MENOR, word, line));
 					break;
 				case '=':
 					word += words[i];
@@ -269,13 +269,13 @@ public class WordAnalyze {
 						i++;
 						if (words[i] == '|') { // 锟斤拷锟斤拷锟斤拷锟斤拷| 锟斤拷识锟斤拷为||
 							word += words[i];
-							TokenList.add(new Token(TokenType.AND, word, line));
+							TokenList.add(new Token(TokenType.OR, word, line));
 						} else { // 锟斤拷锟斤拷锟斤拷锟绞讹拷锟轿獆
 							i--;
-							TokenList.add(new Token(TokenType.L_AND, word, line));
+							TokenList.add(new Token(TokenType.L_OR, word, line));
 						}
 					} else
-						TokenList.add(new Token(TokenType.L_AND, word, line));
+						TokenList.add(new Token(TokenType.L_OR, word, line));
 					break;
 				// 锟街斤拷锟?
 				case '(':

@@ -1,5 +1,5 @@
 import java.lang.String;
-public class Token {
+public class Token implements Cloneable{
 	public int type;
 	public String strval;
 	public int line;
@@ -22,4 +22,14 @@ public class Token {
 		System.out.println('<'+""+type+"    "+strval+"    "+line+'>');
 		}
 	}
+	@Override  
+    public Object clone() {  
+        Token var = null;
+        try{  
+            var = (Token)super.clone(); 
+        }catch(CloneNotSupportedException e) {  
+            e.printStackTrace();  
+        }  
+        return var;  
+    }  
 }

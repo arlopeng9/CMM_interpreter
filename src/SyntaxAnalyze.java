@@ -156,6 +156,32 @@ public class SyntaxAnalyze {
                 errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: ;\n";
             }
             curNode = curNode.getParentNode();
+        }else if(curToken.type == TokenType.SUBSTRACT){
+            addNonTerminal(TreeNodeType.factor, "因式");
+            matchToken();
+            if((curToken.type == TokenType.FLOATVAL) || (curToken.type == TokenType.INTVAL)){
+                matchToken();
+                curNode = curNode.getParentNode();
+                 //当前token为标识符时
+            }else if(curToken.type == TokenType.IDENTIFIER){
+                variable();
+                curNode = curNode.getParentNode();
+                 //当前token为(时
+            }else if(curToken.type == TokenType.LEFT_PARENTHESIS){
+                matchToken();
+                arith_expression();
+                if(curToken.type == TokenType.RIGHT_PARENTHESIS){
+                    matchToken();
+                }else{
+                    getPreToken();
+                   getNextToken();
+                    errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: ;\n";
+                }
+                curNode = curNode.getParentNode();
+            }else{
+                return;
+            }
+             //当前token为(时
         }else{
             return;
         }
@@ -163,8 +189,8 @@ public class SyntaxAnalyze {
 
     //算数表达式
     public void arith_expression(){
-         //当前token为常数、标识符、(、++、--时
-         if((curToken.type == TokenType.FLOATVAL) || (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)){
+         //当前token为常数、标识符、(、++、--、-时
+         if((curToken.type == TokenType.FLOATVAL) || (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)||(curToken.type == TokenType.SUBSTRACT)){
             addNonTerminal(TreeNodeType.arith_expression, "算数表达式");
             factors();
             term();
@@ -177,8 +203,8 @@ public class SyntaxAnalyze {
 
      //因子
      public void factors(){
-        //当前token为常数、标识符、(、++、--时
-        if((curToken.type == TokenType.FLOATVAL) || (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)){
+        //当前token为常数、标识符、(、++、--、-时
+        if((curToken.type == TokenType.FLOATVAL) || (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)||(curToken.type == TokenType.SUBSTRACT)){
            addNonTerminal(TreeNodeType.factors, "因子");
            factor1();
            factor_recursion();
@@ -278,7 +304,7 @@ public class SyntaxAnalyze {
             }
             curNode = curNode.getParentNode();
             //当前token为常数、标识符、(、++、--时
-        }else if((curToken.type == TokenType.FLOATVAL)|| (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)){
+        }else if((curToken.type == TokenType.FLOATVAL)|| (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)||(curToken.type == TokenType.SUBSTRACT)){
             addNonTerminal(TreeNodeType.rightVal, "右值");
             arith_expression();
             curNode = curNode.getParentNode();
@@ -371,7 +397,8 @@ public class SyntaxAnalyze {
     //函数块
     public void functionBlock(){
         if((curToken.type == TokenType.IDENTIFIER)||((curToken.type>=5 ) && (curToken.type <=8))||(curToken.type == TokenType.FOR)||(curToken.type == TokenType.WHILE)
-        ||(curToken.type == TokenType.IF)||(curToken.type == TokenType.RETURN)||(curToken.type == TokenType.SCAN)||(curToken.type == TokenType.SCANF)||(curToken.type == TokenType.PRINT)||(curToken.type == TokenType.PRINTF)){
+        ||(curToken.type == TokenType.IF)||(curToken.type == TokenType.RETURN)||(curToken.type == TokenType.SCAN)||(curToken.type == TokenType.SCANF)||(curToken.type == TokenType.PRINT)
+        ||(curToken.type == TokenType.PRINTF)||(curToken.type == TokenType.BREAK)||(curToken.type == TokenType.CONTINUE)){
             addNonTerminal(TreeNodeType.functionBlock, "函数块");
             stmt_expression_closure();
             functionBlock_closure();
@@ -435,21 +462,21 @@ public class SyntaxAnalyze {
             curNode = curNode.getParentNode();
         }else if(curToken.type == TokenType.CONTINUE){
             if(loop>0){
-                addNonTerminal(TreeNodeType.astament, "一条语句");
+                addNonTerminal(TreeNodeType.functionBlock_closure, "函数块闭包");
                 continue_statment();
                 functionBlock();
                 curNode = curNode.getParentNode();
             }else{
-            errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: continue不能再loop外;\n";
+            errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: continue不能在loop外;\n";
             }
         }else if(curToken.type == TokenType.BREAK){
             if(loop>0){
-                addNonTerminal(TreeNodeType.astament, "一条语句");
+                addNonTerminal(TreeNodeType.functionBlock_closure, "函数块闭包");
                 break_statment();
                 functionBlock();
                 curNode = curNode.getParentNode();
             }else{
-            errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: continue不能再loop外;\n";
+            errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: brrak不能在loop外;\n";
             }
         }else{
             return;
@@ -716,7 +743,7 @@ public void  astament(){
             break_statment();
             curNode = curNode.getParentNode();
         }else{
-        errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: continue不能再loop外;\n";
+        errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect: break不能在loop外;\n";
         }
     }else{
         return;
@@ -729,7 +756,7 @@ public void continue_statment(){
     if((curToken.type==TokenType.CONTINUE)){
         addNonTerminal(TreeNodeType.continue_statment, "continue语句");
         matchToken();
-        if(curToken.type == TokenType.COMMA){
+        if(curToken.type == TokenType.COLON){
             matchToken();
         }else{
             errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect:缺少 ;\n";
@@ -746,7 +773,7 @@ public void break_statment(){
     if((curToken.type==TokenType.BREAK)){
         addNonTerminal(TreeNodeType.break_statment, "break语句");
         matchToken();
-        if(curToken.type == TokenType.COMMA){
+        if(curToken.type == TokenType.COLON){
             matchToken();
         }else{
             errorInfo += "error: line" + curToken.line + "," + "  " + curToken.strval + "    expect:缺少 ;\n";
@@ -889,7 +916,7 @@ public void assignment(){
 
 //逻辑表达式
 public void logical_expression(){
-    //当前token为常数、标识符、(时
+    //当前token为常数、标识符、(、True、False时
     if((curToken.type == TokenType.FLOATVAL) || (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.FALSE)||(curToken.type == TokenType.TRUE)){
         addNonTerminal(TreeNodeType.logical_expression, "逻辑表达式");
         logical_factor1();

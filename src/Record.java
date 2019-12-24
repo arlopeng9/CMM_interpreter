@@ -1,4 +1,5 @@
-public class Record {
+
+public class Record implements Cloneable{
     private int level;//变量的层次
 
     private Token token;//对应的标识符（不一定有）
@@ -44,6 +45,7 @@ public class Record {
         this.type = type;
         this.name = name;
         this.intArray = intArray;
+        this.arrayIndex = 0;
         this.arrayNum = intArray.length;
     }
 
@@ -53,6 +55,7 @@ public class Record {
         this.type = type;
         this.name = name;
         this.boolArray = boolArray;
+        this.arrayIndex = 0;
         this.arrayNum = intArray.length;
     }
 
@@ -62,6 +65,7 @@ public class Record {
         this.type = type;
         this.name = name;
         this.floatArray = floatArray;
+        this.arrayIndex = 0;
         this.arrayNum = floatArray.length;
     }
 
@@ -73,10 +77,10 @@ public class Record {
             return this.floatVal;
         }
         if (this.getType() == Record.tIntArray){
-            return intArray[this.getArrayIndex()];
+            return this.intArray[this.getArrayIndex()];
         }
         if (this.getType() == Record.tFloatArray){
-            return this.floatArray[this.arrayIndex];
+            return this.floatArray[this.getArrayIndex()];
         }
         return 0;
     }
@@ -110,6 +114,18 @@ public class Record {
     }
     if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
         this.setintVal(value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    if( value.getType() == Record.tInt && this.getType() == Record.tIntArray){
+        this.getIntArray()[getArrayIndex()] = value.getintVal();
+        return true;
+    }
+    if( value.getType() == Record.tInt && this.getType() == Record.tFloatArray){
+        this.getfloatArray()[getArrayIndex()] = value.getintVal();
+        return true;
+    }
+    if( value.getType() == Record.tFloat && this.getType() == Record.tFloatArray){
+        this.getfloatArray()[getArrayIndex()] = value.getfloatVal();
         return true;
     }
     if( value.getType() == Record.tboolArray && this.getType() == Record.tbool){
@@ -206,6 +222,7 @@ public class Record {
     }
 
     public boolean mutiplyValue(Record value){
+        if(value != null){
         if(value.getType() == this.getType())
         {
         if(this.getType() == Record.tInt){
@@ -245,6 +262,7 @@ public class Record {
         this.setintVal(this.getintVal() *value.getIntArray()[value.getArrayIndex()]);
         return true;
     }
+}
     return false;
     }
 
@@ -393,4 +411,46 @@ public class Record {
     public void setArrayIndex(Integer arrayIndex) {
         this.arrayIndex = arrayIndex;
     }
+
+    @Override  
+    public Object clone() {  
+        Record var = null; 
+            switch(this.type){
+                case 0 :
+                    var = new Record(this.level, this.token, this.type, "clone", this.intVal);
+                    break;
+                case 1 :
+                    var = new Record(this.level, this.token, this.type, "clone", this.boolVal);
+                    break;
+                case 2 :
+                    var = new Record(this.level, this.token, this.type, "clone", this.floatVal);
+                    break;
+                case 3 :
+                    int[] intArraycopy = new int[this.arrayNum];
+                    System.arraycopy(this.intArray, 0, intArraycopy, 0, this.arrayNum);
+                    var = new Record(this.level, this.token, this.type, "clone", intArraycopy);
+                    var.arrayIndex = this.arrayIndex;
+                    break;
+                case 4 :
+                    boolean[] boolArraycopy = new boolean[this.arrayNum];
+                    System.arraycopy(this.boolArray, 0, boolArraycopy, 0, this.arrayNum);
+                    var = new Record(this.level, this.token, this.type, "clone", boolArraycopy);
+                    var.arrayIndex = this.arrayIndex;
+                    break;
+                case 5 :
+                    float[] floatArraycopy = new float[this.arrayNum];
+                    System.arraycopy(this.floatArray, 0, floatArraycopy, 0, this.arrayNum);
+                    var = new Record(this.level, this.token, this.type, "clone", floatArraycopy);
+                    var.arrayIndex = this.arrayIndex;
+                    break;
+                default:
+                    break;
+            }
+            
+            if(this.token !=null){
+            Token vartoken = (Token)this.token.clone();
+            var.setToken(vartoken);
+            }
+        return var; 
+    }  
 }
