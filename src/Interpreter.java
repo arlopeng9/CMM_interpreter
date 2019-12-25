@@ -5,7 +5,7 @@ public class Interpreter {
 public static void main(String args[]) throws Exception {
 	//File file = new File("D:\\01bag.c");
 	File file = new File("D:\\manacher.c");
-		// File fileout = new File("D:\\dataout.txt");
+	 //File file = new File("D:\\stack.c");
 		// PrintStream ps = new PrintStream(fileout);
 		// System.setOut(ps);
 		

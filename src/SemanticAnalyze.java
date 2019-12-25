@@ -9,7 +9,7 @@ public class SemanticAnalyze {
     private int level = 0;
     private String result = "\n";
     private String errorInfo = "";
-
+    private boolean notcontinue = true;
     public SemanticAnalyze(TreeNode headNode) {
         this.headNode = headNode;
         this.symbalTable = new SymbalTable();
@@ -143,13 +143,9 @@ public class SemanticAnalyze {
                         errorInfo += "数组越界: line" + curNode.getChildren().get(0).getValue().line + " " + var.getName()
                                 + "[" + var.getArrayIndex() + "] in array " + var.getName() + "[" + var.getArrayNum()
                                 + "]\n";
-                                curNode = curNode.getParentNode().getParentNode();
-                        return null;
                     }
                 } else {// 普通变量但是有下标
                     errorInfo += "错误的变量使用方式：变量" + var.getName() + "不是数组\n";
-                    curNode = curNode.getParentNode().getParentNode();
-                    return null;
                 }
             }
            else if ((factor() != null) && factor().getType() == Record.tIntArray) {
@@ -161,18 +157,12 @@ public class SemanticAnalyze {
                         errorInfo += "数组越界: line" + curNode.getChildren().get(0).getValue().line + " " + var.getName()
                                 + "[" + var.getArrayIndex() + "] in array " + var.getName() + "[" + var.getArrayNum()
                                 + "]\n";
-                                curNode = curNode.getParentNode().getParentNode();
-                        return null;
                     }
                 } else {// 普通变量但是有下标
                     errorInfo += "错误的变量使用方式：变量" + var.getName() + "不是数组\n";
-                    curNode = curNode.getParentNode().getParentNode();
-                    return null;
                 }
             } else if ((factor() != null)) {
                 errorInfo += "数组下标不为整数" + var.getName() + "\n";
-                curNode = curNode.getParentNode().getParentNode();
-                return null;
             } 
             curNode = curNode.getParentNode().getParentNode();
         }else {
@@ -551,6 +541,9 @@ public class SemanticAnalyze {
         if (curNode.getType() == TreeNodeType.arith_expression)
             var = arith_expression();
 
+        if (curNode.getType() == TreeNodeType.logical_expression)
+            var = new Record(level, null, Record.tbool, "logical",  logical_expression());
+
         if (curNode.getType() == TreeNodeType.TERMINAL_SYMBOL)
             var = manyConstant(record);
 
@@ -633,23 +626,24 @@ public class SemanticAnalyze {
     }
 
     // 复合函数块
-    public void co_function() {
+    public boolean co_function() {
         level++;
         curNode = curNode.getChildren().get(1);
-        functionBlock();
+        boolean notbreak = functionBlock();
         curNode = curNode.getParentNode();
         symbalTable.s(level);
         level--;
-        
+        return notbreak;
     }
 
     // 函数块
-    public void functionBlock() {
+    public boolean functionBlock() {
+        boolean notbreak = true;
         if(curNode.getChildren().size()>1){
         curNode = curNode.getChildren().get(0);
         stmt_expression_closure();
         curNode = curNode.getParentNode().getChildren().get(1);
-        functionBlock_closure();
+        notbreak = functionBlock_closure();
         curNode = curNode.getParentNode();
     }else if(curNode.getChildren().size() == 1){
         if(curNode.getChildren().get(0).getType() == TreeNodeType.stmt_expression_closure)
@@ -659,15 +653,16 @@ public class SemanticAnalyze {
             curNode = curNode.getParentNode();
         }else if(curNode.getChildren().get(0).getType() == TreeNodeType.functionBlock_closure){
             curNode = curNode.getChildren().get(0);
-            functionBlock_closure();
+            notbreak =functionBlock_closure();
             curNode = curNode.getParentNode();
         }
     }
-
+        return notbreak;
     }
 
     // 函数块闭包
-    public void functionBlock_closure() {
+    public boolean functionBlock_closure() {
+        boolean notbreak = true;
         if (curNode.getChildren().size() > 0) {
             curNode = curNode.getChildren().get(0);
 
@@ -675,79 +670,76 @@ public class SemanticAnalyze {
                 assignment();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if ((curNode.getType() == TreeNodeType.forloop)) {
                 forloop();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if (curNode.getType() == TreeNodeType.whileloop) {
                 whileloop();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if (curNode.getType() == TreeNodeType.if_statement) {
-                if_statement();
-                if(curNode.getParentNode().getChildren().size()>1){
-                curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =if_statement();
+                if(notbreak && notcontinue){
+                    if(curNode.getParentNode().getChildren().size()>1){
+                    curNode = curNode.getParentNode().getChildren().get(1);
+                    notbreak =functionBlock();
                 }
+            }
+                notcontinue = true;
             } else if (curNode.getType() == TreeNodeType.return_statement) {
                 return_statement();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if (curNode.getType() == TreeNodeType.scan_functon) {
                 scan_function();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if (curNode.getType() == TreeNodeType.scanf_function) {
                 scanf_function();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if (curNode.getType() == TreeNodeType.print_function) {
                 print_function();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             } else if (curNode.getType() == TreeNodeType.printf_function) {
                 printf_function();
                 if(curNode.getParentNode().getChildren().size()>1){
                 curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                notbreak =functionBlock();
                 }
             }else if (curNode.getType() == TreeNodeType.break_statment) {
                 if(loop>0){
-                break_statment();
-                }
-                if(curNode.getParentNode().getChildren().size()>1){
-                curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                    notbreak = false;
                 }
             }else if (curNode.getType() == TreeNodeType.continue_statment) {
                 if(loop>0){
-                   continue_statment();
-                    }
-                if(curNode.getParentNode().getChildren().size()>1){
-                curNode = curNode.getParentNode().getChildren().get(1);
-                functionBlock();
+                    notcontinue = false;
                 }
             }
             curNode = curNode.getParentNode();
         }
-    }
+        return notbreak;
+}
 
     // 一条语句
-    public void astament() {
+    public boolean astament() {
+        boolean notbreak = true;
         if (curNode.getChildren().size() > 0) {
             curNode = curNode.getChildren().get(0);
             level ++;
@@ -758,7 +750,7 @@ public class SemanticAnalyze {
             } else if (curNode.getType() == TreeNodeType.whileloop) {
                 whileloop();
             } else if (curNode.getType() == TreeNodeType.if_statement) {
-                if_statement();
+                notbreak = if_statement();
             } else if (curNode.getType() == TreeNodeType.return_statement) {
                 return_statement();
             } else if (curNode.getType() == TreeNodeType.scan_functon) {
@@ -771,11 +763,11 @@ public class SemanticAnalyze {
                 printf_function();
             }else if (curNode.getType() == TreeNodeType.break_statment) {
                 if(loop>0){
-                break_statment();
+                notbreak = false;
                 }
             }else if (curNode.getType() == TreeNodeType.continue_statment) {
                 if(loop>0){
-                continue_statment();
+                    notbreak = true;
                  }
             }
             symbalTable.s(level);
@@ -783,6 +775,8 @@ public class SemanticAnalyze {
            
             curNode = curNode.getParentNode();
         }
+        
+        return notbreak;
     }
 
     public void whereisloop(){
@@ -792,79 +786,7 @@ public class SemanticAnalyze {
         }
     }
 
-     // break语句
-     public void break_statment() {
-        curNode = curNode.getChildren().get(0);
-        whileloop();
-        if(curNode.getType() == TreeNodeType.forloop){
-            curNode = curNode.getParentNode();
-            curNode = curNode.getParentNode().getChildren().get(2);
-            boolean var = logical_expression();
-            while (var) {
-                curNode = curNode.getParentNode().getChildren().get(4);
-                factor1();
-                curNode = curNode.getParentNode().getChildren().get(6);
-                if(curNode.getType() == TreeNodeType.co_function){
-                    co_function();
-                    }else if(curNode.getType() == TreeNodeType.astament){
-                    astament();
-                    }else{
-                        errorInfo += "cssssss";
-                    }
-                curNode = curNode.getParentNode().getChildren().get(2);
-                var = logical_expression();
-    }
-        curNode = curNode.getParentNode();
 
-    }
-}
-
-
-         // continue语句
-         public void continue_statment() {
-            curNode = curNode.getChildren().get(0);
-            whileloop();
-            if(curNode.getType() == TreeNodeType.forloop){
-                symbalTable.s(level);
-                curNode = curNode.getChildren().get(1);
-                boolean var = logical_expression();
-                while (var) {
-                    curNode = curNode.getParentNode().getChildren().get(4);
-                    factor1();
-                    curNode = curNode.getParentNode().getChildren().get(6);
-                    if(curNode.getType() == TreeNodeType.co_function){
-                        co_function();
-                        }else if(curNode.getType() == TreeNodeType.astament){
-                        astament();
-                        }else{
-                            errorInfo += "cssssss";
-                        }
-                    curNode = curNode.getParentNode().getChildren().get(2);
-                    var = logical_expression();
-            }
-            curNode = curNode.getParentNode();
-    
-        }
-        if(curNode.getType() == TreeNodeType.whileloop){
-            symbalTable.s(level);
-            curNode = curNode.getChildren().get(1);
-            boolean var = logical_expression();
-            while (var) {
-                curNode = curNode.getParentNode().getChildren().get(6);
-                if(curNode.getType() == TreeNodeType.co_function){
-                    co_function();
-                    }else if(curNode.getType() == TreeNodeType.astament){
-                    astament();
-                    }else{
-                        errorInfo += "cssssss";
-                    }
-                curNode = curNode.getParentNode().getChildren().get(2);
-                var = logical_expression();
-        }
-        curNode = curNode.getParentNode();
-
-    }
-    }
     
     // print函数
     public void print_function() {
@@ -960,14 +882,15 @@ public class SemanticAnalyze {
         assignment();
         curNode = curNode.getParentNode().getChildren().get(2);
         boolean var = logical_expression();
-        while (var) {
+        boolean notbreak = true;
+        while (var&&notbreak) {
             curNode = curNode.getParentNode().getChildren().get(4);
             factor1();
             curNode = curNode.getParentNode().getChildren().get(6);
             if(curNode.getType() == TreeNodeType.co_function){
-                co_function();
+                 notbreak = co_function();
                 }else if(curNode.getType() == TreeNodeType.astament){
-                astament();
+                notbreak = astament();
                 }else{
                     errorInfo += "cssssss";
                 }
@@ -990,12 +913,13 @@ public class SemanticAnalyze {
     public void whileblock() {
         curNode = curNode.getChildren().get(1);
         boolean var = logical_expression();
-        while (var) {
+        boolean notbreak = true;
+        while (var && notbreak) {
             curNode = curNode.getParentNode().getChildren().get(3);
             if(curNode.getType() == TreeNodeType.co_function){
-                co_function();
+                notbreak = co_function();
                 }else if(curNode.getType() == TreeNodeType.astament){
-                astament();
+                notbreak = astament();
                 }else{
                     errorInfo += "cssssss";
                 }
@@ -1006,47 +930,55 @@ public class SemanticAnalyze {
     }
 
     // 条件语句
-    public void if_statement() {
+    public boolean if_statement() {
+        boolean notbreak = true;
         curNode = curNode.getChildren().get(1);
-        ifblock();
+        notbreak = ifblock();
         curNode = curNode.getParentNode();
+        return notbreak;
     }
 
     // 条件语句块
-    public void ifblock() {
+    public boolean ifblock() {
         curNode = curNode.getChildren().get(1);
         boolean var = logical_expression();
-        if (var) {
+        boolean notbreak = true;
+        if(notbreak){
+        if (var ) {
             curNode = curNode.getParentNode().getChildren().get(3);
             if(curNode.getType() == TreeNodeType.co_function){
-            co_function();
+            notbreak = co_function();
             }else if(curNode.getType() == TreeNodeType.astament){
-            astament();
+            notbreak = astament();
             }else{
                 errorInfo += "cssssss";
             }
         } else {
             if(curNode.getParentNode().getChildren().size()>4){
             curNode = curNode.getParentNode().getChildren().get(4);
-            else_statement();
+            notbreak = else_statement();
             }
         }
+    }
         curNode = curNode.getParentNode();
+        return notbreak;
     }
 
     // 否则语句
-    public void else_statement() {
+    public boolean else_statement() {
+        boolean notbreak = true;
         if (curNode.getChildren().size() > 0) {
             curNode = curNode.getChildren().get(1);
             if(curNode.getType() == TreeNodeType.co_function){
-                co_function();
+                notbreak = co_function();
                 }else if(curNode.getType() == TreeNodeType.astament){
-                astament();
+                notbreak = astament();
                 }else{
                     errorInfo += "cssssss";
                 }
             curNode = curNode.getParentNode();
         }
+        return notbreak;
     }
 
     // 返回语句
@@ -1226,7 +1158,6 @@ public class SemanticAnalyze {
             default:break;
             }
         }}catch(Exception e){
-            System.out.println(e);
         }
             curNode = curNode.getParentNode();
             return res;
@@ -1251,9 +1182,11 @@ public class SemanticAnalyze {
                 curNode = curNode.getParentNode().getParentNode().getChildren().get(0);
                 record = variable();
                 curNode = curNode.getParentNode().getChildren().get(1);
+                if(var!=null){
                 if(!record.setValue(var)) 
                 errorInfo += "赋值类型不兼容：line " + record.getToken().line + " "
                 + record.getToken().strval + "\n";
+                }
                 break;
             case TokenType.ADD_EQUAL:
                  curNode = curNode.getParentNode().getChildren().get(1);

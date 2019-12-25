@@ -73,11 +73,17 @@ public class Record implements Cloneable{
         if(this.getType() == Record.tInt){
             return this.intVal;
         }
+        if (this.getType() == Record.tbool){
+            return this.boolVal?1:0;
+        }
         if (this.getType() == Record.tFloat){
             return this.floatVal;
         }
         if (this.getType() == Record.tIntArray){
             return this.intArray[this.getArrayIndex()];
+        }
+        if (this.getType() == Record.tIntArray){
+            return this.boolArray[this.getArrayIndex()]?1:0;
         }
         if (this.getType() == Record.tFloatArray){
             return this.floatArray[this.getArrayIndex()];
@@ -108,12 +114,16 @@ public class Record implements Cloneable{
         }
         return true;
     }
-    if( (value.getType() == Record.tInt && this.getType() == Record.tFloat)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)){
+    if( (value.getType() == Record.tInt && this.getType() == Record.tFloat)||( value.getType() == Record.tIntArray && this.getType() == Record.tFloat)||( value.getType() == Record.tFloatArray && this.getType() == Record.tFloat)||( value.getType() == Record.tbool && this.getType() == Record.tFloat)){
         this.setfloatVal(value.getValue());
         return true;
     }
-    if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
+    if( value.getType() == Record.tIntArray  && this.getType() == Record.tInt){
         this.setintVal(value.getIntArray()[value.getArrayIndex()]);
+        return true;
+    }
+    if( value.getType() == Record.tbool  && this.getType() == Record.tInt){
+        this.setintVal(value.getboolVal()?1:0);
         return true;
     }
     if( value.getType() == Record.tInt && this.getType() == Record.tIntArray){
@@ -136,6 +146,7 @@ public class Record implements Cloneable{
     }
 
     public boolean addValue(Record value){
+        try{
         if(value.getType() == this.getType())
         {
         if(this.getType() == Record.tInt){
@@ -174,11 +185,13 @@ public class Record implements Cloneable{
     if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
         this.setintVal(this.getintVal() +value.getIntArray()[value.getArrayIndex()]);
         return true;
+    }}catch(Exception e){
     }
     return false;
     }
 
     public boolean substractValue(Record value){
+        try{
         if(value.getType() == this.getType())
         {
         if(this.getType() == Record.tInt){
@@ -217,11 +230,13 @@ public class Record implements Cloneable{
     if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
         this.setintVal(this.getintVal() -value.getIntArray()[value.getArrayIndex()]);
         return true;
+    }}catch(Exception e){
     }
     return false;
     }
 
     public boolean mutiplyValue(Record value){
+        try{
         if(value != null){
         if(value.getType() == this.getType())
         {
@@ -262,11 +277,13 @@ public class Record implements Cloneable{
         this.setintVal(this.getintVal() *value.getIntArray()[value.getArrayIndex()]);
         return true;
     }
+}}catch(Exception e){
 }
     return false;
     }
 
     public boolean divideValue(Record value){
+        try{
         if(value.getType() == this.getType())
         {
         if(this.getType() == Record.tInt){
@@ -305,6 +322,7 @@ public class Record implements Cloneable{
     if( value.getType() == Record.tIntArray && this.getType() == Record.tInt){
         this.setintVal(this.getintVal() /value.getIntArray()[value.getArrayIndex()]);
         return true;
+    }}catch(Exception e){
     }
     return false;
     }

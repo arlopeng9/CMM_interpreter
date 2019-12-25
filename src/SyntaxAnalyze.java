@@ -306,7 +306,11 @@ public class SyntaxAnalyze {
             //当前token为常数、标识符、(、++、--时
         }else if((curToken.type == TokenType.FLOATVAL)|| (curToken.type == TokenType.INTVAL)||(curToken.type == TokenType.IDENTIFIER)||(curToken.type == TokenType.LEFT_PARENTHESIS)||(curToken.type == TokenType.ADD_ADD)||(curToken.type == TokenType.SUBSTRACT_SUBSTRACT)||(curToken.type == TokenType.SUBSTRACT)){
             addNonTerminal(TreeNodeType.rightVal, "右值");
+            if(islogical1(tokenIndex)){
+                logical_expression();
+            }else{
             arith_expression();
+            }
             curNode = curNode.getParentNode();
         }else{
             return;
@@ -957,7 +961,7 @@ public boolean islogical(int index){
             count++;
     }
     while(count>=1){
-        if((count == 1)&&((curToken.type == TokenType.MAIOR)||(curToken.type == TokenType.MENOR)||(curToken.type == TokenType.EQEQ)||(curToken.type == TokenType.UNEQ)||(curToken.type == TokenType.MEEQ)||(curToken.type == TokenType.MAEQ)||(curToken.type == TokenType.AND)||(curToken.type == TokenType.OR)))
+        if((count == 1)&&((token.type == TokenType.MAIOR)||(token.type == TokenType.MENOR)||(token.type == TokenType.EQEQ)||(token.type == TokenType.UNEQ)||(token.type == TokenType.MEEQ)||(token.type == TokenType.MAEQ)||(token.type == TokenType.AND)||(token.type == TokenType.OR)))
             return true;
 
         if(token.type == TokenType.RIGHT_PARENTHESIS){
@@ -977,6 +981,19 @@ public boolean islogical(int index){
         
         return false;
 }
+
+//判断是否是逻辑表达式,逻辑表达式返回true。<右值> -> <逻辑表达式>此时使用
+public boolean islogical1(int index){
+    Token token = tokenList.get(index);
+    while(token.type != TokenType.COLON){
+        if(((token.type == TokenType.MAIOR)||(token.type == TokenType.MENOR)||(token.type == TokenType.EQEQ)||(token.type == TokenType.UNEQ)||(token.type == TokenType.MEEQ)||(token.type == TokenType.MAEQ)||(token.type == TokenType.AND)||(token.type == TokenType.OR)))
+            return true;
+        index++;
+        token = tokenList.get(index);
+    }
+        return false;
+}
+
 //逻辑因式2
 public void logical_factor2(){
     //当前token为常数、标识符、(时
