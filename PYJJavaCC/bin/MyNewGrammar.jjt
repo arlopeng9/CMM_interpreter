@@ -1,0 +1,319 @@
+options
+{
+  static = true;
+  FORCE_LA_CHECK = true;
+  LOOKAHEAD=4;
+	BUILD_NODE_FILES = true ;
+	MULTI = false;
+}
+
+PARSER_BEGIN(CMMParser)
+
+import java.util.*;
+
+public class CMMParser
+{
+  public static void main(String args []) throws ParseException
+  {
+    int i =0;
+    while(i<1)
+    {i++; 
+    try
+      {
+      	File file = new File("E:\\JavaCC.txt");
+ 		FileInputStream FileStream= new FileInputStream(file);
+        System.out.println("Reading from standard input...");
+		CMMParser parser = new CMMParser(FileStream);
+ 		SimpleNode root = parser.Program();
+		root.dump(">");
+      }
+      catch (Exception e)
+      {
+        System.out.println("����.");
+        System.out.println(e.getMessage());
+        CMMParser.ReInit(System.in);
+      }
+      catch (Error e)
+      {
+        System.out.println("Oops.");
+        System.out.println(e.getMessage());
+      }
+      }
+     
+    
+
+	}
+}
+
+PARSER_END(CMMParser)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+|	<"//" (~["\n","\r"])* ("\n"|"\r")>
+|  <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+|  <"/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
+}
+
+
+
+TOKEN : 
+{
+
+ <BOOL : "bool" >
+| <CHAR : "char" >
+| <INT: "int">
+| <FLOAT: "float">
+| <IF: "if">
+| <ELSE: "else">
+| <WHILE: "while">
+| <FOR: "for">
+| <BREAK: "break">
+| <CONTINUE: "continue">
+| <RETURN: "return">
+| <TRUE: "true">
+| <FALSE: "false">
+
+}
+
+//\u7b26\u53f7
+TOKEN :
+{
+  <LP: "(">
+| <RP: ")">
+| <LEFTSQUARE: "[">
+| <RIGHTSQUARE: "]">
+| <LEFTBRACE: "{">
+| <RIGHTBRACE: "}">
+| <PLUS : "+" >
+| <MINUS : "-" >
+| <MULTIPLY : "*" >
+| <DIVIDE : "/" >
+| <LESSTHAN: "<">
+| <GREATERTHAN: ">">
+| <ASSIGN: "=">
+| <LESSEQUAL: "<=">
+| <GREATEREQUAL: " >=">
+| <EQUAL: "==">
+| <DIFFERENT: "!=">
+| <COMMA: ",">
+| <SEMICOLON: ";">
+| <LOGICOR: "||">
+| <LOGICAND: "&&">
+| <SELFADD: "++">
+| <SELFMINUS: "--">
+}
+
+
+//\u6807\u5fd7\u7b26\uff0cint \u548c float
+TOKEN :
+{
+< Sign:  <LETTER>
+			| <LETTER>(<LETTER> | <DIGIT> | "_")*(<LETTER> | <DIGIT>)+>
+| < INTEGER : < DIGIT>|["1"-"9"](< DIGIT >)+ >
+| < SINGLE : (<DIGIT>)+"."(<DIGIT>)+>
+| <#LETTER: ["a"-"z", "A"-"Z"]>
+| <#DIGIT : [ "0"-"9" ] >
+}
+
+
+
+//\u7a0b\u5e8f
+SimpleNode Program(): { }
+{
+    (declar_stmt())?
+    { return jjtThis; }  
+}
+
+void declar_stmt():{}
+{
+  type() variable() <LP> para_stmt() <RP>  (co_function()|";") 
+}
+
+void type():{}{
+  <INT>|<BOOL>|<FLOAT>
+}
+
+void variable():{}
+{
+  <Sign> (arrayIndex())?
+}
+
+
+void para_stmt():{}
+{
+  (stmt()stmt_closure())?
+}
+
+void stmt():{}{
+type()variable()initialvalue()
+}
+
+void initialvalue():{}{
+  ("="rightVal())?
+}
+void rightVal():{}{
+  arith_expression()|logical_expression()|
+  ("{"mantConstant()"}"  )
+}
+
+
+void logical_expression():{}{
+  logical_factor1()("||"logical_expression())?
+}
+
+void logical_factor1():{}{
+  logical_factor2()("&&"logical_factor1())?
+}
+
+void logical_factor2():{}{
+  ("true")
+  |("false")
+  |(arith_expression()logical_symbol()arith_expression())
+  |("("logical_expression()")")
+}
+
+void logical_symbol():{}{
+  <LESSTHAN>
+| <GREATERTHAN>
+| <ASSIGN>
+| <LESSEQUAL>
+| <GREATEREQUAL>
+| <EQUAL>
+| <DIFFERENT>
+| <LOGICOR>
+| <LOGICAND>
+}
+
+
+void mantConstant():{}{
+constant() constant_closure()
+}
+
+void constant_closure():{}{
+  (","constant()constant_closure())?
+}
+void stmt_closure():{}{
+  (","stmt()stmt_closure())?
+}
+
+void co_function():{}{
+"{"fuctionBlock()"}"
+}
+
+void fuctionBlock():{}{
+  stmt_expression_closure()fuctionBlock_closure()
+}
+
+void stmt_expression_closure():{}{
+(stmt_expression()stmt_expression_closure())?
+}
+
+void stmt_expression():{}{
+(stmt()|para_stmt())";"
+}
+
+void fuctionBlock_closure():{}{
+  ((assignment()|forloop()|whileloop()|if_statement()|return_statement()|prin_function()|scan_function()|<CONTINUE>|<BREAK>)
+  fuctionBlock())?
+}
+
+void if_statement():{}{
+  "if"ifblock()
+}
+
+void ifblock():{}{
+  ("("logical_expression()")")(co_function()|astament())(else_statement())?
+}
+
+
+void else_statement():{}{
+  "else"(co_function()|astament())
+}
+
+void return_statement():{}{
+  "return"factor()
+}
+void prin_function():{}{
+  "print""("para_list()")"";"
+}
+void scan_function():{}{
+  "scan""("para_list()")"";"
+}
+void para_list():{}{
+  para()para_closure()
+}
+void para_closure():{}{
+ (","para()para_closure())?
+}
+
+void astament():{}{
+  assignment()|forloop()|whileloop()|return_statement()|if_statement()|stmt_expression()
+}
+
+void para():{}{
+  variable()|constant()
+}
+
+
+
+void forloop():{}{
+  "for"forblock()
+}
+void forblock():{}{
+  ("("assignment()";"factor1())(co_function()|astament())
+}
+void assignment():{}{
+ ( type())?variable()assign()
+}
+
+void assign():{}{
+  ("="rightVal())|("("para_list()")")|"++"|"--"
+}
+
+void whileloop():{}{
+  "while"whileblock()
+}
+
+void whileblock():{}{
+  ("("logical_expression()")")(co_function()|astament())
+}
+
+
+
+void arrayIndex():{}{
+"[" factor()"]"
+}
+
+void factor():{}{
+  (("-")? ("("arith_expression()")"|variable()|constant()))
+}
+
+void constant():{}{
+  <INTEGER>|<SINGLE>
+}
+
+void arith_expression():{}{
+  factors()term()
+}
+
+void factors():{}{
+factor1()(factor_recursion())?
+}
+
+void factor1():{}{
+(("++"|"--")factor())
+|
+(factor()("++"|"--"))
+|factor()
+}
+
+void factor_recursion():{}{
+  ("*"|"/")factor1()factor_recursion()
+}
+void term():{}{
+(("+"|"-")factors()term())?
+}
